@@ -151,7 +151,7 @@ button:active { transform: scale(0.95); }
 .settings-toggle {
     position: fixed;
     right: 20px;
-    top: 20px;
+    bottom: 30px; /* Pastga tushirildi */
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -177,7 +177,7 @@ button:active { transform: scale(0.95); }
 .settings-panel {
     position: fixed;
     right: 20px;
-    top: 80px; /* Tugma ostida */
+    bottom: 90px; /* Tugma ustida */
     background: var(--glass-bg);
     backdrop-filter: blur(15px);
     padding: 15px;
@@ -192,7 +192,7 @@ button:active { transform: scale(0.95); }
     /* Yashirish uchun */
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-20px);
+    transform: translateY(20px); /* Pastdan chiqishi uchun */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .settings-panel.active {
@@ -315,7 +315,9 @@ button:active { transform: scale(0.95); }
 </div>
 
 <script>
-const apiKey = "OPENWEATHER_API_KEYINGIZ";
+// API kalitni URL parametridan olish (Bot orqali yuboriladi)
+const urlParams = new URLSearchParams(window.location.search);
+const apiKey = urlParams.get('api_key') || "OPENWEATHER_API_KEYINGIZ";
 
 // Tarjimalar
 const translations = {
