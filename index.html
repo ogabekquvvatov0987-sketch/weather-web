@@ -5,63 +5,272 @@
 <title>Weather App</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
+:root {
+    --bg-gradient: linear-gradient(135deg, #1e3c72, #2a5298);
+    --text-color: white;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    --input-bg: rgba(255, 255, 255, 0.2);
+    --btn-bg: rgba(0, 198, 255, 0.6);
+}
+
+body.light-mode {
+    --bg-gradient: linear-gradient(135deg, #89f7fe, #66a6ff);
+    --text-color: #333;
+    --glass-bg: rgba(255, 255, 255, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --glass-shadow: 0 8px 32px 0 rgba(100, 100, 100, 0.2);
+    --input-bg: rgba(255, 255, 255, 0.6);
+    --btn-bg: rgba(0, 120, 255, 0.6);
+}
+
 body {
-    margin:0;
-    font-family: Arial;
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    color:white;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-gradient);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: var(--text-color);
+    overflow: hidden;
+    transition: background 0.5s ease;
 }
 
+/* Asosiy konteyner (Device wrapper) */
+#app-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Telefon rejimi */
+#app-wrapper.mobile-mode {
+    width: 375px;
+    height: 812px;
+    border-radius: 40px;
+    border: 12px solid #333;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    background: var(--bg-gradient); /* Ichki fon */
+}
+
+/* Glassmorphism Card */
 .card {
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(15px);
-    padding:30px;
-    border-radius:20px;
-    text-align:center;
-    width:300px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    padding: 30px;
+    border-radius: 25px;
+    text-align: center;
+    width: 85%;
+    max-width: 320px;
+    transition: all 0.3s ease;
 }
 
-h1 { margin:10px 0; font-size:40px; }
+h1 { margin: 10px 0; font-size: 40px; font-weight: 700; }
+h2 { margin-bottom: 20px; font-weight: 600; }
+
 input {
-    padding:10px;
-    width:80%;
-    border:none;
-    border-radius:10px;
+    padding: 12px;
+    width: 85%;
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    background: var(--input-bg);
+    color: var(--text-color);
+    outline: none;
+    font-size: 16px;
+    margin-bottom: 15px;
+    transition: 0.3s;
 }
+input::placeholder { color: var(--text-color); opacity: 0.7; }
+
 button {
-    margin-top:10px;
-    padding:10px 20px;
-    border:none;
-    border-radius:10px;
-    background:#00c6ff;
-    color:white;
-    cursor:pointer;
+    padding: 12px 25px;
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    background: var(--btn-bg);
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    backdrop-filter: blur(5px);
+    transition: transform 0.2s, background 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+button:active { transform: scale(0.95); }
+
+/* Sozlamalar Paneli (Sidebar) */
+.settings-panel {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    padding: 15px;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+    box-shadow: var(--glass-shadow);
+}
+
+.settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.settings-label {
+    font-size: 12px;
+    opacity: 0.8;
+    text-align: center;
+}
+
+.icon-btn {
+    background: rgba(255,255,255,0.2);
+    padding: 8px;
+    border-radius: 10px;
+    font-size: 14px;
+    width: 100%;
+}
+.icon-btn.active {
+    background: var(--btn-bg);
+    border: 1px solid white;
 }
 </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>🌤 Ob-havo</h2>
-    <input type="text" id="city" placeholder="Shahar nomi">
-    <br>
-    <button onclick="getWeather()">Ko‘rish</button>
-    <div id="result"></div>
+<!-- Sozlamalar Paneli -->
+<div class="settings-panel">
+    <div class="settings-group">
+        <span class="settings-label" id="lbl_device">Qurilma</span>
+        <button class="icon-btn active" onclick="setDevice('desktop')" id="btn_desktop">💻 PC</button>
+        <button class="icon-btn" onclick="setDevice('mobile')" id="btn_mobile">📱 Tel</button>
+    </div>
+    <div class="settings-group">
+        <span class="settings-label" id="lbl_theme">Mavzu</span>
+        <button class="icon-btn" onclick="toggleTheme()" id="btn_theme">🌙 / ☀️</button>
+    </div>
+    <div class="settings-group">
+        <span class="settings-label" id="lbl_lang">Til</span>
+        <button class="icon-btn" onclick="setLang('uz')">🇺🇿 UZ</button>
+        <button class="icon-btn" onclick="setLang('ru')">🇷🇺 RU</button>
+        <button class="icon-btn" onclick="setLang('en')">🇬🇧 EN</button>
+    </div>
+</div>
+
+<!-- Asosiy Ilova -->
+<div id="app-wrapper">
+    <div class="card">
+        <h2 id="app_title">🌤 Ob-havo</h2>
+        <input type="text" id="city" placeholder="Shahar nomi">
+        <br>
+        <button onclick="getWeather()" id="btn_check">Ko‘rish</button>
+        <div id="result"></div>
+    </div>
 </div>
 
 <script>
 const apiKey = "OPENWEATHER_API_KEYINGIZ";
 
+// Tarjimalar
+const translations = {
+    uz: {
+        title: "🌤 Ob-havo",
+        placeholder: "Shahar nomi...",
+        btn: "Ko‘rish",
+        device: "Qurilma",
+        theme: "Mavzu",
+        lang: "Til",
+        error_empty: "❗ Shahar nomini kiriting",
+        error_not_found: "❌ Shahar topilmadi",
+        error_net: "⚠ Internet xatosi",
+        humidity: "Namlik",
+        wind: "Shamol"
+    },
+    ru: {
+        title: "🌤 Погода",
+        placeholder: "Название города...",
+        btn: "Показать",
+        device: "Устр-во",
+        theme: "Тема",
+        lang: "Язык",
+        error_empty: "❗ Введите название города",
+        error_not_found: "❌ Город не найден",
+        error_net: "⚠ Ошибка сети",
+        humidity: "Влажность",
+        wind: "Ветер"
+    },
+    en: {
+        title: "🌤 Weather",
+        placeholder: "City name...",
+        btn: "Check",
+        device: "Device",
+        theme: "Theme",
+        lang: "Lang",
+        error_empty: "❗ Enter city name",
+        error_not_found: "❌ City not found",
+        error_net: "⚠ Network error",
+        humidity: "Humidity",
+        wind: "Wind"
+    }
+};
+
+let currentLang = 'uz';
+
+function setLang(lang) {
+    currentLang = lang;
+    const t = translations[lang];
+    
+    document.getElementById('app_title').innerText = t.title;
+    document.getElementById('city').placeholder = t.placeholder;
+    document.getElementById('btn_check').innerText = t.btn;
+    document.getElementById('lbl_device').innerText = t.device;
+    document.getElementById('lbl_theme').innerText = t.theme;
+    document.getElementById('lbl_lang').innerText = t.lang;
+    
+    // Agar natija ko'rsatilgan bo'lsa, uni tozalash yoki yangilash mumkin
+    document.getElementById('result').innerHTML = "";
+}
+
+function setDevice(mode) {
+    const wrapper = document.getElementById('app-wrapper');
+    const btnDesktop = document.getElementById('btn_desktop');
+    const btnMobile = document.getElementById('btn_mobile');
+
+    if (mode === 'mobile') {
+        wrapper.classList.add('mobile-mode');
+        btnMobile.classList.add('active');
+        btnDesktop.classList.remove('active');
+    } else {
+        wrapper.classList.remove('mobile-mode');
+        btnDesktop.classList.add('active');
+        btnMobile.classList.remove('active');
+    }
+}
+
+function toggleTheme() {
+    document.body.classList.toggle('light-mode');
+}
+
 async function getWeather() {
     const city = document.getElementById("city").value;
     const resultDiv = document.getElementById("result");
+    const t = translations[currentLang];
 
     if (!city) {
-        resultDiv.innerHTML = "❗ Shahar nomini kiriting";
+        resultDiv.innerHTML = t.error_empty;
         return;
     }
 
@@ -71,23 +280,26 @@ async function getWeather() {
         );
 
         if (!response.ok) {
-            resultDiv.innerHTML = "❌ Shahar topilmadi";
+            resultDiv.innerHTML = t.error_not_found;
             return;
         }
 
         const data = await response.json();
 
         resultDiv.innerHTML = `
-            <h1>${data.main.temp}°C</h1>
+            <h1>${Math.round(data.main.temp)}°C</h1>
             <p>${data.weather[0].description}</p>
-            <p>Namlik: ${data.main.humidity}%</p>
-            <p>Shamol: ${data.wind.speed} m/s</p>
+            <p>${t.humidity}: ${data.main.humidity}%</p>
+            <p>${t.wind}: ${data.wind.speed} m/s</p>
         `;
 
     } catch (error) {
-        resultDiv.innerHTML = "⚠ Internet yoki API xatosi";
+        resultDiv.innerHTML = t.error_net;
     }
 }
+
+// Boshlang'ich sozlamalar
+setLang('uz');
 </script>
 
 </body>
