@@ -86,7 +86,6 @@ body {
 #app-wrapper.mobile-mode button { font-size: 14px; padding: 10px 15px; }
 #app-wrapper.mobile-mode .details-grid { grid-template-columns: 1fr; gap: 5px; font-size: 13px; }
 #app-wrapper.mobile-mode .input-group { flex-direction: row; width: 100%; }
-}
 
 /* Glassmorphism Card */
 .card {
@@ -319,6 +318,11 @@ button:active { transform: scale(0.95); }
 const urlParams = new URLSearchParams(window.location.search);
 const apiKey = urlParams.get('api_key') || "OPENWEATHER_API_KEYINGIZ";
 
+// API kalit tekshiruvi
+if (apiKey === "OPENWEATHER_API_KEYINGIZ") {
+    alert("⚠️ API kalit topilmadi! .env faylini tekshiring.");
+}
+
 // Tarjimalar
 const translations = {
     uz: {
@@ -467,11 +471,14 @@ async function fetchWeather(query, lon, isCoords) {
         const response = await fetch(url);
 
         if (!response.ok) {
-            if (!isCoords) {
+            const errData = await response.json();
+            const errMsg = errData.message || "Unknown error";
+            console.error("API Error:", errMsg);
+
+            if (response.status === 404 && !isCoords) {
                 resultDiv.innerHTML = `${t.error_not_found}<br><br><button class="location-btn" onclick="getLocation()" style="width:100%">${t.loc_access.replace('...', '')}</button>`;
             } else {
-                // Agar koordinata bilan topilmasa, API xatosi bo'lishi mumkin
-                resultDiv.innerHTML = `${t.error_not_found} (API)`;
+                resultDiv.innerHTML = `❌ <b>Xatolik (${response.status}):</b><br>${errMsg}`;
             }
             return;
         }
@@ -498,7 +505,7 @@ async function fetchWeather(query, lon, isCoords) {
         `;
 
     } catch (error) {
-        resultDiv.innerHTML = t.error_net;
+        resultDiv.innerHTML = `${t.error_net}<br><small>${error.message}</small>`;
         console.error(error);
     }
 }
