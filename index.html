@@ -6,23 +6,25 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root {
-    --bg-gradient: linear-gradient(135deg, #1e3c72, #2a5298);
-    --text-color: white;
-    --glass-bg: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(255, 255, 255, 0.2);
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    --input-bg: rgba(255, 255, 255, 0.2);
-    --btn-bg: rgba(0, 198, 255, 0.6);
+    /* Kunduzgi rejim (Default - Ko'k) */
+    --bg-gradient: linear-gradient(135deg, #4facfe, #00f2fe);
+    --text-color: #fff;
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    --input-bg: rgba(255, 255, 255, 0.3);
+    --btn-bg: rgba(0, 120, 255, 0.7);
 }
 
-body.light-mode {
-    --bg-gradient: linear-gradient(135deg, #89f7fe, #66a6ff);
-    --text-color: #333;
-    --glass-bg: rgba(255, 255, 255, 0.4);
-    --glass-border: rgba(255, 255, 255, 0.6);
-    --glass-shadow: 0 8px 32px 0 rgba(100, 100, 100, 0.2);
-    --input-bg: rgba(255, 255, 255, 0.6);
-    --btn-bg: rgba(0, 120, 255, 0.6);
+body.dark-mode {
+    /* Tun rejimi (Qora) */
+    --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    --text-color: #e0e0e0;
+    --glass-bg: rgba(0, 0, 0, 0.3);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    --input-bg: rgba(255, 255, 255, 0.1);
+    --btn-bg: rgba(0, 0, 0, 0.5);
 }
 
 body {
@@ -63,13 +65,16 @@ body {
 
 /* Telefon rejimida ichki elementlarni moslashtirish */
 #app-wrapper.mobile-mode .card {
-    width: 90%;
-    padding: 20px;
+    width: 85%; /* Kichikroq kenglik */
+    padding: 15px;
+    margin-top: 40px; /* Tepadan joy */
 }
-#app-wrapper.mobile-mode h1 { font-size: 32px; }
-#app-wrapper.mobile-mode h2 { font-size: 20px; }
-#app-wrapper.mobile-mode input, 
-#app-wrapper.mobile-mode button { font-size: 14px; padding: 10px; }
+#app-wrapper.mobile-mode h1 { font-size: 28px; margin: 5px 0; }
+#app-wrapper.mobile-mode h2 { font-size: 18px; margin-bottom: 10px; }
+#app-wrapper.mobile-mode input { width: 100%; font-size: 14px; padding: 10px; box-sizing: border-box; }
+#app-wrapper.mobile-mode button { font-size: 14px; padding: 10px 15px; }
+#app-wrapper.mobile-mode .details-grid { grid-template-columns: 1fr; gap: 5px; font-size: 13px; }
+#app-wrapper.mobile-mode .input-group { flex-direction: row; width: 100%; }
 }
 
 /* Glassmorphism Card */
@@ -311,7 +316,7 @@ function setDevice(mode) {
 }
 
 function toggleTheme() {
-    document.body.classList.toggle('light-mode');
+    document.body.classList.toggle('dark-mode');
 }
 
 // Joylashuvni aniqlash
@@ -368,7 +373,8 @@ async function fetchWeather(query, lon, isCoords) {
             if (!isCoords) {
                 resultDiv.innerHTML = `${t.error_not_found}<br><br><button class="location-btn" onclick="getLocation()" style="width:100%">${t.loc_access.replace('...', '')}</button>`;
             } else {
-                resultDiv.innerHTML = t.error_net;
+                // Agar koordinata bilan topilmasa, API xatosi bo'lishi mumkin
+                resultDiv.innerHTML = `${t.error_not_found} (API)`;
             }
             return;
         }
