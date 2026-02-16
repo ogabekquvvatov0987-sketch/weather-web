@@ -2,9 +2,17 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Weather App</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
+/* Umumiy reset (barcha elementlar uchun) */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 :root {
     /* Kunduzgi rejim (Default - Ko'k) */
     --bg-gradient: linear-gradient(135deg, #4facfe, #00f2fe);
@@ -27,16 +35,19 @@ body.dark-mode {
     --btn-bg: rgba(0, 0, 0, 0.5);
 }
 
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden; /* Gorizontal scrollni oldini olish */
+}
+
 body {
-    margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: var(--bg-gradient);
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
     color: var(--text-color);
-    overflow: hidden;
     transition: background 0.5s ease;
 }
 
@@ -187,6 +198,45 @@ button:active { transform: scale(0.95); }
     background: rgba(0,0,0,0.1);
     padding: 15px;
     border-radius: 15px;
+}
+
+/* Mobil qurilmalar uchun moslashtirish (Responsive) */
+@media (max-width: 768px) {
+    body {
+        font-size: 16px;
+        align-items: flex-start; /* Elementlarni tepadan joylashtirish */
+        padding-top: 20px;
+    }
+    
+    .card {
+        width: 95%;
+        max-width: 100%;
+        padding: 20px;
+    }
+
+    input, button {
+        width: 100%;
+        padding: 12px;
+    }
+
+    /* Qidiruv qatori uchun maxsus qoida (yonma-yon turishi uchun) */
+    .input-group input {
+        width: auto;
+        flex: 1;
+    }
+    .input-group button {
+        width: auto;
+    }
+
+    /* Mobil rejimda simulator ramkasini olib tashlash (haqiqiy telefonda) */
+    #app-wrapper.mobile-mode {
+        width: 100%;
+        height: auto;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        overflow-y: visible;
+    }
 }
 </style>
 </head>
@@ -404,6 +454,15 @@ async function fetchWeather(query, lon, isCoords) {
         resultDiv.innerHTML = t.error_net;
         console.error(error);
     }
+}
+
+// Telegram Web App SDK ni ishga tushirish
+if (window.Telegram?.WebApp) {
+    window.Telegram.WebApp.ready();          // Ilova tayyorligini bildirish
+    window.Telegram.WebApp.expand();         // Ilovani to'liq ekranga yoyish
+    try {
+        window.Telegram.WebApp.requestFullscreen(); // To'liq ekran rejimi (agar mavjud bo'lsa)
+    } catch (e) {}
 }
 
 // Boshlang'ich sozlamalar
