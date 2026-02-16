@@ -316,11 +316,11 @@ button:active { transform: scale(0.95); }
 <script>
 // API kalitni URL parametridan olish (Bot orqali yuboriladi)
 const urlParams = new URLSearchParams(window.location.search);
-const apiKey = urlParams.get('api_key') || "OPENWEATHER_API_KEYINGIZ";
+let apiKey = urlParams.get('api_key');
 
-// API kalit tekshiruvi
-if (apiKey === "OPENWEATHER_API_KEYINGIZ") {
-    alert("⚠️ API kalit topilmadi! .env faylini tekshiring.");
+// Agar kalit yo'q bo'lsa yoki placeholder bo'lsa, zaxira kalitni (WeatherAPI) ishlatamiz
+if (!apiKey || apiKey === "OPENWEATHER_API_KEYINGIZ") {
+    apiKey = "ff551288f31542a8bd7181253261602";
 }
 
 // Tarjimalar
@@ -460,22 +460,22 @@ async function fetchWeather(query, lon, isCoords) {
     const resultDiv = document.getElementById("result");
     const t = translations[currentLang];
     
+    // WeatherAPI.com dan foydalanamiz
     let url = "";
-    if (isCoords) {
-        url = `https://api.openweathermap.org/data/2.5/weather?lat=${query}&lon=${lon}&appid=${apiKey}&units=metric&lang=${currentLang}`;
-    } else {
-        url = `https://api.openweathermap.org/data/2.5/weather?q=${query}&appid=${apiKey}&units=metric&lang=${currentLang}`;
-    }
+    const q = isCoords ? `${query},${lon}` : query;
+    
+    // Forecast endpoint orqali kunlik ma'lumot (sunrise/sunset uchun)
+    url = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${q}&days=1&aqi=no&alerts=no&lang=${currentLang}`;
 
     try {
         const response = await fetch(url);
 
         if (!response.ok) {
             const errData = await response.json();
-            const errMsg = errData.message || "Unknown error";
+            const errMsg = errData.error?.message || "Unknown error";
             console.error("API Error:", errMsg);
 
-            if (response.status === 404 && !isCoords) {
+            if (response.status === 400 && !isCoords) {
                 resultDiv.innerHTML = `${t.error_not_found}<br><br><button class="location-btn" onclick="getLocation()" style="width:100%">${t.loc_access.replace('...', '')}</button>`;
             } else {
                 resultDiv.innerHTML = `❌ <b>Xatolik (${response.status}):</b><br>${errMsg}`;
@@ -484,23 +484,23 @@ async function fetchWeather(query, lon, isCoords) {
         }
 
         const data = await response.json();
+        const current = data.current;
+        const location = data.location;
+        const astro = data.forecast.forecastday[0].astro;
         
-        // Quyosh chiqishi va botishi vaqtini formatlash
-        const sunrise = new Date(data.sys.sunrise * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const sunset = new Date(data.sys.sunset * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
         resultDiv.innerHTML = `
-            <h2>${data.name}, ${data.sys.country}</h2>
-            <h1>${Math.round(data.main.temp)}°C</h1>
-            <p>${data.weather[0].description}</p>
+            <h2>${location.name}, ${location.country}</h2>
+            <h1>${Math.round(current.temp_c)}°C</h1>
+            <p>${current.condition.text}</p>
             
             <div class="details-grid">
-                <div>💧 ${t.humidity}: ${data.main.humidity}%</div>
-                <div>💨 ${t.wind}: ${data.wind.speed} m/s</div>
-                <div>🌡 ${t.feels_like}: ${Math.round(data.main.feels_like)}°C</div>
-                <div>⏲ ${t.pressure}: ${data.main.pressure} hPa</div>
-                <div>🌅 ${sunrise}</div>
-                <div>🌇 ${sunset}</div>
+                <div>💧 ${t.humidity}: ${current.humidity}%</div>
+                <div>💨 ${t.wind}: ${(current.wind_kph / 3.6).toFixed(1)} m/s</div>
+                <div>🌡 ${t.feels_like}: ${Math.round(current.feelslike_c)}°C</div>
+                <div>⏲ ${t.pressure}: ${current.pressure_mb} hPa</div>
+                <div>🌅 ${astro.sunrise}</div>
+                <div>🌇 ${astro.sunset}</div>
             </div>
         `;
 
