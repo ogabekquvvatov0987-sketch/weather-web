@@ -15,13 +15,13 @@
 
 :root {
     /* Default fon (Quyoshli osmon) */
-    --bg-image: url('https://images.unsplash.com/photo-1601297183305-6df142704ea2?q=80&w=1974&auto=format&fit=crop');
+    /* --bg-image is deprecated, using video now */
     --text-color: #fff;
     --glass-bg: rgba(255, 255, 255, 0.15);
     --glass-border: rgba(255, 255, 255, 0.2);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     --input-bg: rgba(0, 0, 0, 0.2);
-    --btn-bg: rgba(255, 255, 255, 0.2);
+    --btn-bg: rgba(255, 255, 255, 0.1); /* Ozroq shaffofroq */
     --btn-hover: rgba(255, 255, 255, 0.3);
 }
 
@@ -32,7 +32,7 @@ body.dark-mode {
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
     --input-bg: rgba(0, 0, 0, 0.4);
-    --btn-bg: rgba(255, 255, 255, 0.1);
+    --btn-bg: rgba(0, 0, 0, 0.2);
     --btn-hover: rgba(255, 255, 255, 0.2);
 }
 
@@ -44,16 +44,26 @@ html, body {
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-image: var(--bg-image);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background: #000; /* Video yuklanmaguncha qora fon */
     display: flex;
     justify-content: center;
     align-items: center;
     color: var(--text-color);
-    transition: background-image 1s ease-in-out;
+    transition: background 1s ease-in-out;
+}
+
+/* Animated Video Background */
+#bg-video {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -100;
+    object-fit: cover;
+    transition: opacity 1s ease-in-out;
 }
 
 /* Asosiy konteyner (Device wrapper) */
@@ -139,7 +149,7 @@ button {
     cursor: pointer;
     font-size: 16px;
     font-weight: 600;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px); /* Shaffoflikni oshirish */
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
@@ -147,7 +157,7 @@ button:hover { background: var(--btn-hover); transform: translateY(-2px); }
 button:active { transform: scale(0.95); transform: translateY(0); }
 
 .location-btn {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--btn-bg);
     padding: 12px;
 }
 
@@ -231,7 +241,7 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 
 .details-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Moslashuvchan ustunlar */
     gap: 10px;
     margin-top: 20px;
     font-size: 14px;
@@ -239,6 +249,19 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     background: rgba(0,0,0,0.2);
     padding: 15px;
     border-radius: 15px;
+}
+
+/* Magnit bo'roni uchun */
+.geomagnetic-storm {
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(255, 165, 0, 0.2); /* Ogohlantiruvchi rang */
+    border: 1px solid rgba(255, 165, 0, 0.5);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+    display: none; /* By default hidden */
 }
 
 /* Mobil qurilmalar uchun moslashtirish (Responsive) */
@@ -345,6 +368,11 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 </head>
 <body>
 
+<!-- Animated Video Background -->
+<video autoplay muted loop id="bg-video">
+    <source src="https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4" type="video/mp4">
+</video>
+
 <!-- Loading Screen -->
 <div id="loader-wrapper">
     <div class="loader-content">
@@ -387,6 +415,7 @@ button:active { transform: scale(0.95); transform: translateY(0); }
         </div>
         <button onclick="getWeather()" id="btn_check">Ko‘rish</button>
         <div id="result"></div>
+        <div class="geomagnetic-storm" id="geomagnetic-storm-info"></div>
     </div>
 </div>
 
@@ -446,7 +475,10 @@ const translations = {
         humidity: "Namlik",
         wind: "Shamol",
         feels_like: "His qilinishi",
-        pressure: "Bosim",
+        uv_index: "UV Indeks",
+        visibility: "Ko'rinish",
+        wind_dir: "Shamol yo'n.",
+        g_storm_watch: "Magnit bo'roni kutilmoqda",
         loc_access: "📍 Joylashuvni aniqlash...",
         loc_denied: "❌ Joylashuvga ruxsat berilmadi"
     },
@@ -463,7 +495,10 @@ const translations = {
         humidity: "Влажность",
         wind: "Ветер",
         feels_like: "Ощущается",
-        pressure: "Давление",
+        uv_index: "УФ-индекс",
+        visibility: "Видимость",
+        wind_dir: "Напр. ветра",
+        g_storm_watch: "Ожидается магнитная буря",
         loc_access: "📍 Определение местоположения...",
         loc_denied: "❌ Доступ к геопозиции запрещен"
     },
@@ -480,7 +515,10 @@ const translations = {
         humidity: "Humidity",
         wind: "Wind",
         feels_like: "Feels like",
-        pressure: "Pressure",
+        uv_index: "UV Index",
+        visibility: "Visibility",
+        wind_dir: "Wind Dir.",
+        g_storm_watch: "Geomagnetic storm watch",
         loc_access: "📍 Locating...",
         loc_denied: "❌ Location denied"
     }
@@ -551,30 +589,67 @@ function getLocation() {
 }
 
 // Orqa fonni ob-havoga qarab o'zgartirish
-function updateBackground(conditionText, isDay) {
+function updateBackgroundVideo(conditionText, isDay) {
+    const videoEl = document.getElementById('bg-video');
+    const currentSrc = videoEl.querySelector('source').getAttribute('src');
     const text = conditionText.toLowerCase();
-    let imageUrl = "";
+    let newSrc = "";
 
-    // Unsplash source URLs (Barqaror linklar)
-    if (text.includes("rain") || text.includes("drizzle") || text.includes("yomg'ir")) {
+    // Pexels video URLs
+    if (text.includes("thunder") || text.includes("chaqmoq")) {
+        // Chaqmoq
+        newSrc = "https://videos.pexels.com/video-files/6992288/6992288-hd_1920_1080_25fps.mp4";
+    } else if (text.includes("rain") || text.includes("drizzle") || text.includes("yomg'ir")) {
         // Yomg'ir
-        imageUrl = "https://images.unsplash.com/photo-1519692933481-e162a57d6721?q=80&w=2070&auto=format&fit=crop";
+        newSrc = "https://videos.pexels.com/video-files/1732934/1732934-hd_1920_1080_30fps.mp4";
     } else if (text.includes("snow") || text.includes("qor") || text.includes("blizzard")) {
         // Qor
-        imageUrl = "https://images.unsplash.com/photo-1477601263568-180e2c6d046e?q=80&w=2070&auto=format&fit=crop";
-    } else if (text.includes("cloud") || text.includes("overcast") || text.includes("mist") || text.includes("fog") || text.includes("bulut")) {
+        newSrc = "https://videos.pexels.com/video-files/3253429/3253429-hd_1920_1080_25fps.mp4";
+    } else if (text.includes("mist") || text.includes("fog") || text.includes("tuman")) {
+        // Tuman
+        newSrc = "https://videos.pexels.com/video-files/2833497/2833497-hd_1920_1080_25fps.mp4";
+    } else if (text.includes("cloud") || text.includes("overcast") || text.includes("bulut")) {
         // Bulutli
-        imageUrl = "https://images.unsplash.com/photo-1534088568595-a066f410bcda?q=80&w=1951&auto=format&fit=crop";
+        newSrc = "https://videos.pexels.com/video-files/855344/855344-hd_1920_1080_24fps.mp4";
     } else if (!isDay) {
         // Tun (ochiq havo)
-        imageUrl = "https://images.unsplash.com/photo-1532978023637-12f27690597c?q=80&w=2070&auto=format&fit=crop";
+        newSrc = "https://videos.pexels.com/video-files/3124151/3124151-hd_1920_1080_25fps.mp4";
     } else {
         // Kun (ochiq havo - default)
-        imageUrl = "https://images.unsplash.com/photo-1601297183305-6df142704ea2?q=80&w=1974&auto=format&fit=crop";
+        newSrc = "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4";
     }
 
-    // CSS o'zgaruvchisini yangilash
-    document.documentElement.style.setProperty('--bg-image', `url('${imageUrl}')`);
+    // Agar video o'zgargan bo'lsa, yangilash
+    if (newSrc && newSrc !== currentSrc) {
+        videoEl.style.opacity = 0; // Sekin o'tish uchun
+        setTimeout(() => {
+            videoEl.querySelector('source').setAttribute('src', newSrc);
+            videoEl.load();
+            videoEl.play();
+            videoEl.style.opacity = 1;
+        }, 500);
+    }
+}
+
+// Magnit bo'roni ma'lumotini olish
+async function getGeomagneticStormInfo() {
+    const stormDiv = document.getElementById('geomagnetic-storm-info');
+    const t = translations[currentLang];
+    try {
+        const response = await fetch('https://services.swpc.noaa.gov/products/alerts.json');
+        const alerts = await response.json();
+        const stormAlert = alerts.find(alert => alert.message.includes('Geomagnetic Storm Watch'));
+        
+        if (stormAlert) {
+            stormDiv.innerText = `🛰️ ${t.g_storm_watch}`;
+            stormDiv.style.display = 'block';
+        } else {
+            stormDiv.style.display = 'none';
+        }
+    } catch (error) {
+        console.error("Geomagnetic storm fetch error:", error);
+        stormDiv.style.display = 'none';
+    }
 }
 
 async function getWeather() {
@@ -594,6 +669,7 @@ async function getWeather() {
 async function fetchWeather(query, lon, isCoords) {
     const resultDiv = document.getElementById("result");
     const t = translations[currentLang];
+    getGeomagneticStormInfo(); // Magnit bo'roni tekshiruvini chaqirish
     
     // WeatherAPI.com dan foydalanamiz
     let url = "";
@@ -624,7 +700,7 @@ async function fetchWeather(query, lon, isCoords) {
         const astro = data.forecast.forecastday[0].astro;
         
         // Fonni yangilash
-        updateBackground(current.condition.text, current.is_day);
+        updateBackgroundVideo(current.condition.text, current.is_day);
 
         resultDiv.innerHTML = `
             <h2>${location.name}, ${location.country}</h2>
@@ -632,12 +708,12 @@ async function fetchWeather(query, lon, isCoords) {
             <p>${current.condition.text}</p>
             
             <div class="details-grid">
+                <div>🌡 ${t.feels_like}: ${Math.round(current.feelslike_c)}°C</div>
                 <div>💧 ${t.humidity}: ${current.humidity}%</div>
                 <div>💨 ${t.wind}: ${(current.wind_kph / 3.6).toFixed(1)} m/s</div>
-                <div>🌡 ${t.feels_like}: ${Math.round(current.feelslike_c)}°C</div>
-                <div>⏲ ${t.pressure}: ${current.pressure_mb} hPa</div>
-                <div>🌅 ${astro.sunrise}</div>
-                <div>🌇 ${astro.sunset}</div>
+                <div>🧭 ${t.wind_dir}: ${current.wind_dir}</div>
+                <div>☀️ ${t.uv_index}: ${current.uv}</div>
+                <div>👁️ ${t.visibility}: ${current.vis_km} km</div>
             </div>
         `;
 
