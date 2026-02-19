@@ -65,7 +65,7 @@ body {
     filter: blur(8px); /* Orqa fonni xiralashtirish */
     transform: scale(1.2); /* Xiralashgan chetlarni yopish uchun kattalashtirildi */
     object-fit: cover;
-    transition: opacity 2s ease-in-out; /* Almashish sekinlashtirildi */
+    transition: opacity 3s ease-in-out; /* Almashish yanada sekinlashtirildi */
     will-change: opacity; /* Optimizatsiya */
 }
 
@@ -170,7 +170,7 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 .settings-toggle {
     position: fixed;
     right: 20px;
-    bottom: 30px; /* Pastga tushirildi */
+    bottom: 20px; /* Yana pastga tushirildi */
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -197,7 +197,7 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     position: fixed;
     left: 50%;
     transform: translateX(-50%) translateY(20px); /* Markazlashtirish */
-    bottom: 100px; /* Tugma ustida */
+    bottom: 80px; /* Tugma ustida, ozroq pastga */
     width: 90%;
     max-width: 500px;
     background: var(--glass-bg);
@@ -403,22 +403,19 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 <div class="settings-panel" id="settingsPanel">
     <div class="settings-group">
         <span class="settings-label" id="lbl_device">Qurilma</span>
-        <button class="icon-btn active" onclick="setDevice('desktop')" id="btn_desktop">💻</button>
+        <button class="icon-btn" onclick="setDevice('desktop')" id="btn_desktop">💻</button>
         <button class="icon-btn" onclick="setDevice('mobile')" id="btn_mobile">📱</button>
     </div>
     <div class="settings-group">
         <span class="settings-label" id="lbl_theme">Mavzu</span>
-        <button class="icon-btn" onclick="toggleTheme()" id="btn_theme">🌙 / ☀️</button>
+        <button class="icon-btn" onclick="setTheme('light')" id="btn_light">☀️</button>
+        <button class="icon-btn" onclick="setTheme('dark')" id="btn_dark">🌙</button>
     </div>
     <div class="settings-group">
         <span class="settings-label" id="lbl_lang">Til</span>
-        <button class="icon-btn" onclick="setLang('uz')">🇺🇿 UZ</button>
-        <button class="icon-btn" onclick="setLang('ru')">🇷🇺 RU</button>
-        <button class="icon-btn" onclick="setLang('en')">🇬🇧 EN</button>
-    </div>
-    <div class="settings-group">
-        <span class="settings-label" id="lbl_sound">Ovoz</span>
-        <button class="icon-btn" onclick="toggleSound()" id="btn_sound">🔇</button>
+        <button class="icon-btn" onclick="setLang('uz')" id="btn_lang_uz">🇺🇿 UZ</button>
+        <button class="icon-btn" onclick="setLang('ru')" id="btn_lang_ru">🇷🇺 RU</button>
+        <button class="icon-btn" onclick="setLang('en')" id="btn_lang_en">🇬🇧 EN</button>
     </div>
 
 </div>
@@ -437,10 +434,6 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     </div>
 </div>
 
-<!-- Sound Effects -->
-<audio id="click-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_23b3757d97.mp3" preload="auto" muted></audio>
-<audio id="loading-sound" src="https://cdn.pixabay.com/download/audio/2022/10/26/audio_a2b373266b.mp3" preload="auto" loop></audio>
-
 <script>
 // API kalitni URL parametridan olish (Bot orqali yuboriladi)
 const urlParams = new URLSearchParams(window.location.search);
@@ -449,36 +442,22 @@ let apiKey = urlParams.get('api_key');
 // Global variables to store current weather info
 let currentWeatherConditionText = "";
 let currentWeatherIsDay = true; // Default to day
-let isSoundEnabled = false; // Default to off
 
 // --- LOADING LOGIC (5 soniya) ---
 document.addEventListener("DOMContentLoaded", () => {
     const loader = document.getElementById('loader-wrapper');
     const progressCircle = document.getElementById('progressCircle');
     const progressText = document.getElementById('progressText');
-    const loadingSound = document.getElementById('loading-sound');
-    const videoEl = document.getElementById('bg-video');
-    const soundBtn = document.getElementById('btn_sound');
 
     // Initialize theme state first
     const savedThemeState = localStorage.getItem('isDarkMode');
-    if (savedThemeState === 'true') {
-        document.body.classList.add('dark-mode');
-    } else {
-        document.body.classList.remove('dark-mode');
-    }
+    const isDarkMode = (savedThemeState === 'true');
+    document.body.classList.toggle('dark-mode', isDarkMode);
+    document.getElementById('btn_dark').classList.toggle('active', isDarkMode);
+    document.getElementById('btn_light').classList.toggle('active', !isDarkMode);
 
-    // Initialize sound state
-    const savedSoundState = localStorage.getItem('isSoundEnabled');
-    isSoundEnabled = (savedSoundState === 'true');
-    videoEl.muted = !isSoundEnabled;
-    if (soundBtn) soundBtn.innerText = isSoundEnabled ? '🔊' : '🔇';
-    if (soundBtn) soundBtn.classList.toggle('active', isSoundEnabled);
-
-    // Play loading sound
-    if (loadingSound) {
-        loadingSound.play().catch(e => console.warn("Yuklanish ovozini avtomatik ijro etish bloklandi."));
-    }
+    // Set default device view
+    setDevice('desktop');
     
     let percentage = 0;
     const duration = 5000; // 5 soniya
@@ -490,15 +469,10 @@ document.addEventListener("DOMContentLoaded", () => {
         percentage += increment;
         if (percentage >= 100) {
             percentage = 100;
-            // Stop loading sound
             clearInterval(interval);
             setTimeout(() => {
                 loader.style.opacity = '0';
                 loader.style.visibility = 'hidden';
-                // Stop loading sound
-                if (loadingSound) {
-                    loadingSound.pause();
-                }
             }, 500);
         }
         
@@ -603,7 +577,14 @@ function setLang(lang) {
     document.getElementById('lbl_device').innerText = t.lbl_device;
     document.getElementById('lbl_theme').innerText = t.lbl_theme;
     document.getElementById('lbl_lang').innerText = t.lbl_lang;
-    document.getElementById('lbl_sound').innerText = t.lbl_sound;
+    
+    // Til tugmasini aktiv qilish
+    ['uz', 'ru', 'en'].forEach(l => {
+        const btn = document.getElementById(`btn_lang_${l}`);
+        if (btn) {
+            btn.classList.toggle('active', l === lang);
+        }
+    });
     
     // Agar natija ko'rsatilgan bo'lsa, uni tozalash yoki yangilash mumkin
     document.getElementById('result').innerHTML = "";
@@ -625,12 +606,16 @@ function setDevice(mode) {
     }
 }
 
-function toggleTheme() {
-    document.body.classList.toggle('dark-mode');
-    const isDarkMode = document.body.classList.contains('dark-mode');
-    localStorage.setItem('isDarkMode', isDarkMode); // Save theme preference
-    // Re-call updateBackgroundVideo to apply theme's day/night preference
-    // We need the last fetched conditionText and is_day from API
+function setTheme(theme) {
+    const isDarkMode = (theme === 'dark');
+    document.body.classList.toggle('dark-mode', isDarkMode);
+    localStorage.setItem('isDarkMode', isDarkMode);
+
+    // Tugmalarni yangilash
+    document.getElementById('btn_dark').classList.toggle('active', isDarkMode);
+    document.getElementById('btn_light').classList.toggle('active', !isDarkMode);
+
+    // Fonni yangilash
     if (currentWeatherConditionText) {
         updateBackgroundVideo(currentWeatherConditionText, currentWeatherIsDay);
     }
@@ -709,7 +694,7 @@ function updateBackgroundVideo(conditionText, apiIsDay) {
         setTimeout(() => {
             videoEl.src = newSrc;
             videoEl.load();
-            videoEl.playbackRate = 0.7; // Videoni sekinlashtirish (sokinlik uchun)
+            videoEl.playbackRate = 0.6; // Videoni yanada sekinlashtirish
             const playPromise = videoEl.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => {
@@ -828,16 +813,6 @@ if (window.Telegram?.WebApp) {
 // Boshlang'ich sozlamalar
 setLang('uz');
 
-// Tugma bosish uchun ovoz
-const clickSound = document.getElementById('click-sound');
-document.addEventListener('click', function(e) {
-    if (e.target.tagName === 'BUTTON') {
-        if (clickSound) {
-            clickSound.currentTime = 0;
-            clickSound.play().catch(e => console.warn("Klik ovozini ijro etishda xato."));
-        }
-    }
-});
 </script>
 
 </body>
