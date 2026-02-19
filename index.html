@@ -63,9 +63,10 @@ body {
     height: auto;
     z-index: -100;
     filter: blur(8px); /* Orqa fonni xiralashtirish */
-    transform: scale(1.1); /* Xiralashgan chetlarni yopish uchun */
+    transform: scale(1.2); /* Xiralashgan chetlarni yopish uchun kattalashtirildi */
     object-fit: cover;
-    transition: opacity 1s ease-in-out;
+    transition: opacity 2s ease-in-out; /* Almashish sekinlashtirildi */
+    will-change: opacity; /* Optimizatsiya */
 }
 
 /* Asosiy konteyner (Device wrapper) */
@@ -154,6 +155,8 @@ button {
     backdrop-filter: blur(10px); /* Shaffoflikni oshirish */
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
 }
 button:hover { background: var(--btn-hover); transform: translateY(-2px); }
 button:active { transform: scale(0.95); transform: translateY(0); }
@@ -192,35 +195,41 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 /* Sozlamalar Paneli (Sidebar) */
 .settings-panel {
     position: fixed;
-    right: 20px;
-    bottom: 90px; /* Tugma ustida */
+    left: 50%;
+    transform: translateX(-50%) translateY(20px); /* Markazlashtirish */
+    bottom: 100px; /* Tugma ustida */
+    width: 90%;
+    max-width: 500px;
     background: var(--glass-bg);
     backdrop-filter: blur(15px);
     padding: 15px;
     border-radius: 20px;
     border: 1px solid var(--glass-border);
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* Gorizontal */
+    flex-wrap: wrap;
+    justify-content: space-around;
     gap: 10px;
     z-index: 1000;
     box-shadow: var(--glass-shadow);
-    
     /* Yashirish uchun */
     opacity: 0;
     visibility: hidden;
-    transform: translateY(20px); /* Pastdan chiqishi uchun */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .settings-panel.active {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
 }
 
 .settings-group {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    flex: 1;
+    min-width: 80px;
+    align-items: center;
 }
 
 .settings-label {
@@ -237,8 +246,10 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     width: 100%;
 }
 .icon-btn.active {
-    background: var(--btn-bg);
-    border: 1px solid white;
+    background: rgba(46, 204, 113, 0.8); /* Yashil rang (aktiv holat) */
+    border: 1px solid #2ecc71;
+    color: white;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
 }
 
 .details-grid {
@@ -525,6 +536,7 @@ const translations = {
         lbl_device: "Qurilma",
         lbl_theme: "Mavzu",
         lbl_lang: "Til",
+        lbl_sound: "Ovoz",
         g_storm_watch: "Magnit bo'roni kutilmoqda",
         loc_access: "📍 Joylashuvni aniqlash...",
         loc_denied: "❌ Joylashuvga ruxsat berilmadi"
@@ -548,6 +560,7 @@ const translations = {
         lbl_device: "Устр-во",
         lbl_theme: "Тема",
         lbl_lang: "Язык",
+        lbl_sound: "Звук",
         g_storm_watch: "Ожидается магнитная буря",
         loc_access: "📍 Определение местоположения...",
         loc_denied: "❌ Доступ к геопозиции запрещен"
@@ -571,6 +584,7 @@ const translations = {
         lbl_device: "Device",
         lbl_theme: "Theme",
         lbl_lang: "Lang",
+        lbl_sound: "Sound",
         g_storm_watch: "Geomagnetic storm watch",
         loc_access: "📍 Locating...",
         loc_denied: "❌ Location denied"
@@ -669,7 +683,7 @@ function updateBackgroundVideo(conditionText, apiIsDay) {
         cloudsDay: "https://videos.pexels.com/video-files/855344/855344-hd_1920_1080_24fps.mp4",
         cloudsNight: "https://videos.pexels.com/video-files/5794557/5794557-hd_1920_1080_25fps.mp4",
         clearDay: "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4",
-        clearNight: "https://videos.pexels.com/video-files/3124151/3124151-hd_1920_1080_25fps.mp4"
+        clearNight: "https://videos.pexels.com/video-files/3121459/3121459-hd_1920_1080_25fps.mp4" // Shahar tuni (chiroqlar)
     };
 
     if (text.includes("thunder") || text.includes("chaqmoq")) {
@@ -695,6 +709,7 @@ function updateBackgroundVideo(conditionText, apiIsDay) {
         setTimeout(() => {
             videoEl.src = newSrc;
             videoEl.load();
+            videoEl.playbackRate = 0.7; // Videoni sekinlashtirish (sokinlik uchun)
             const playPromise = videoEl.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => {
