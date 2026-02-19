@@ -14,25 +14,26 @@
 }
 
 :root {
-    /* Kunduzgi rejim (Default - Ko'k) */
-    --bg-gradient: linear-gradient(135deg, #4facfe, #00f2fe);
+    /* Default fon (Quyoshli osmon) */
+    --bg-image: url('https://images.unsplash.com/photo-1601297183305-6df142704ea2?q=80&w=1974&auto=format&fit=crop');
     --text-color: #fff;
-    --glass-bg: rgba(255, 255, 255, 0.25);
-    --glass-border: rgba(255, 255, 255, 0.4);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-    --input-bg: rgba(255, 255, 255, 0.3);
-    --btn-bg: rgba(0, 120, 255, 0.7);
+    --glass-bg: rgba(255, 255, 255, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    --input-bg: rgba(0, 0, 0, 0.2);
+    --btn-bg: rgba(255, 255, 255, 0.2);
+    --btn-hover: rgba(255, 255, 255, 0.3);
 }
 
 body.dark-mode {
-    /* Tun rejimi (Qora) */
-    --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    /* Tun rejimi */
     --text-color: #e0e0e0;
-    --glass-bg: rgba(0, 0, 0, 0.3);
+    --glass-bg: rgba(0, 0, 0, 0.6);
     --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-    --input-bg: rgba(255, 255, 255, 0.1);
-    --btn-bg: rgba(0, 0, 0, 0.5);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
+    --input-bg: rgba(0, 0, 0, 0.4);
+    --btn-bg: rgba(255, 255, 255, 0.1);
+    --btn-hover: rgba(255, 255, 255, 0.2);
 }
 
 html, body {
@@ -43,12 +44,16 @@ html, body {
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg-gradient);
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     display: flex;
     justify-content: center;
     align-items: center;
     color: var(--text-color);
-    transition: background 0.5s ease;
+    transition: background-image 1s ease-in-out;
 }
 
 /* Asosiy konteyner (Device wrapper) */
@@ -70,7 +75,6 @@ body {
     border-radius: 40px;
     border: 12px solid #333;
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    background: var(--bg-gradient); /* Ichki fon */
     overflow-y: auto; /* Scroll bo'lishi uchun */
 }
 
@@ -90,14 +94,14 @@ body {
 /* Glassmorphism Card */
 .card {
     background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
     padding: 30px;
     border-radius: 25px;
     text-align: center;
-    width: 85%;
+    width: 90%;
     max-width: 320px;
     transition: all 0.3s ease;
 }
@@ -119,7 +123,7 @@ input {
     border: 1px solid var(--glass-border);
     border-radius: 15px;
     background: var(--input-bg);
-    color: var(--text-color);
+    color: #fff;
     outline: none;
     font-size: 16px;
     transition: 0.3s;
@@ -136,13 +140,14 @@ button {
     font-size: 16px;
     font-weight: 600;
     backdrop-filter: blur(5px);
-    transition: transform 0.2s, background 0.3s;
+    transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
-button:active { transform: scale(0.95); }
+button:hover { background: var(--btn-hover); transform: translateY(-2px); }
+button:active { transform: scale(0.95); transform: translateY(0); }
 
 .location-btn {
-    background: rgba(46, 204, 113, 0.6); /* Yashilroq rang */
+    background: rgba(255, 255, 255, 0.2);
     padding: 12px;
 }
 
@@ -169,7 +174,7 @@ button:active { transform: scale(0.95); }
 }
 .settings-toggle:hover {
     transform: rotate(90deg);
-    background: var(--btn-bg);
+    background: var(--btn-hover);
 }
 
 /* Sozlamalar Paneli (Sidebar) */
@@ -231,7 +236,7 @@ button:active { transform: scale(0.95); }
     margin-top: 20px;
     font-size: 14px;
     text-align: left;
-    background: rgba(0,0,0,0.1);
+    background: rgba(0,0,0,0.2);
     padding: 15px;
     border-radius: 15px;
 }
@@ -274,9 +279,81 @@ button:active { transform: scale(0.95); }
         overflow-y: visible;
     }
 }
+
+/* LOADING SCREEN */
+#loader-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    transition: opacity 0.5s ease, visibility 0.5s;
+}
+
+.loader-content {
+    text-align: center;
+    color: white;
+}
+
+.progress-circle {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(#00f2fe var(--progress), rgba(255,255,255,0.1) 0deg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px auto;
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+}
+
+.progress-circle::before {
+    content: "";
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: #1e3c72; /* Loader foni bilan bir xil */
+    border-radius: 50%;
+}
+
+.progress-text {
+    position: relative;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 1;
+}
+
+.loading-msg {
+    font-size: 18px;
+    opacity: 0.9;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
 </style>
 </head>
 <body>
+
+<!-- Loading Screen -->
+<div id="loader-wrapper">
+    <div class="loader-content">
+        <div class="progress-circle" id="progressCircle" style="--progress: 0deg;">
+            <span class="progress-text" id="progressText">0%</span>
+        </div>
+        <p class="loading-msg">Sahifa yuklanmoqda, iltimos kuting...</p>
+    </div>
+</div>
 
 <!-- Sozlamalar Tugmasi -->
 <button class="settings-toggle" onclick="toggleSettings()">⚙️</button>
@@ -317,6 +394,37 @@ button:active { transform: scale(0.95); }
 // API kalitni URL parametridan olish (Bot orqali yuboriladi)
 const urlParams = new URLSearchParams(window.location.search);
 let apiKey = urlParams.get('api_key');
+
+// --- LOADING LOGIC (5 soniya) ---
+document.addEventListener("DOMContentLoaded", () => {
+    const loader = document.getElementById('loader-wrapper');
+    const progressCircle = document.getElementById('progressCircle');
+    const progressText = document.getElementById('progressText');
+    
+    let percentage = 0;
+    const duration = 5000; // 5 soniya
+    const intervalTime = 50; // Har 50ms da yangilash
+    const steps = duration / intervalTime;
+    const increment = 100 / steps;
+
+    const interval = setInterval(() => {
+        percentage += increment;
+        if (percentage >= 100) {
+            percentage = 100;
+            clearInterval(interval);
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                loader.style.visibility = 'hidden';
+            }, 500);
+        }
+        
+        // Update UI
+        progressText.innerText = Math.round(percentage) + "%";
+        // 360 daraja * foiz / 100
+        const degrees = (percentage / 100) * 360;
+        progressCircle.style.setProperty('--progress', degrees + 'deg');
+    }, intervalTime);
+});
 
 // Agar kalit yo'q bo'lsa yoki placeholder bo'lsa, zaxira kalitni (WeatherAPI) ishlatamiz
 if (!apiKey || apiKey === "OPENWEATHER_API_KEYINGIZ") {
@@ -442,6 +550,33 @@ function getLocation() {
     }
 }
 
+// Orqa fonni ob-havoga qarab o'zgartirish
+function updateBackground(conditionText, isDay) {
+    const text = conditionText.toLowerCase();
+    let imageUrl = "";
+
+    // Unsplash source URLs (Barqaror linklar)
+    if (text.includes("rain") || text.includes("drizzle") || text.includes("yomg'ir")) {
+        // Yomg'ir
+        imageUrl = "https://images.unsplash.com/photo-1519692933481-e162a57d6721?q=80&w=2070&auto=format&fit=crop";
+    } else if (text.includes("snow") || text.includes("qor") || text.includes("blizzard")) {
+        // Qor
+        imageUrl = "https://images.unsplash.com/photo-1477601263568-180e2c6d046e?q=80&w=2070&auto=format&fit=crop";
+    } else if (text.includes("cloud") || text.includes("overcast") || text.includes("mist") || text.includes("fog") || text.includes("bulut")) {
+        // Bulutli
+        imageUrl = "https://images.unsplash.com/photo-1534088568595-a066f410bcda?q=80&w=1951&auto=format&fit=crop";
+    } else if (!isDay) {
+        // Tun (ochiq havo)
+        imageUrl = "https://images.unsplash.com/photo-1532978023637-12f27690597c?q=80&w=2070&auto=format&fit=crop";
+    } else {
+        // Kun (ochiq havo - default)
+        imageUrl = "https://images.unsplash.com/photo-1601297183305-6df142704ea2?q=80&w=1974&auto=format&fit=crop";
+    }
+
+    // CSS o'zgaruvchisini yangilash
+    document.documentElement.style.setProperty('--bg-image', `url('${imageUrl}')`);
+}
+
 async function getWeather() {
     const city = document.getElementById("city").value;
     const resultDiv = document.getElementById("result");
@@ -488,6 +623,8 @@ async function fetchWeather(query, lon, isCoords) {
         const location = data.location;
         const astro = data.forecast.forecastday[0].astro;
         
+        // Fonni yangilash
+        updateBackground(current.condition.text, current.is_day);
 
         resultDiv.innerHTML = `
             <h2>${location.name}, ${location.country}</h2>
