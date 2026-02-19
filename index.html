@@ -473,6 +473,8 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => {
                 loader.style.opacity = '0';
                 loader.style.visibility = 'hidden';
+                // Sahifa yuklangach, avtomatik joylashuv bo'yicha ob-havoni ko'rsatish
+                getLocation();
             }, 500);
         }
         
@@ -668,7 +670,7 @@ function updateBackgroundVideo(conditionText, apiIsDay) {
         cloudsDay: "https://videos.pexels.com/video-files/855344/855344-hd_1920_1080_24fps.mp4",
         cloudsNight: "https://videos.pexels.com/video-files/5794557/5794557-hd_1920_1080_25fps.mp4",
         clearDay: "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4",
-        clearNight: "https://videos.pexels.com/video-files/3121459/3121459-hd_1920_1080_25fps.mp4" // Shahar tuni (chiroqlar)
+        clearNight: "https://videos.pexels.com/video-files/3129957/3129957-hd_1920_1080_25fps.mp4" // Aniqroq shahar tuni (chiroqlar va mashinalar)
     };
 
     if (text.includes("thunder") || text.includes("chaqmoq")) {
@@ -772,6 +774,7 @@ async function fetchWeather(query, lon, isCoords) {
         }
 
         const data = await response.json();
+        console.log("WeatherAPI Response:", data); // Tilni tekshirish uchun
         const current = data.current;
         const location = data.location;
         currentWeatherConditionText = current.condition.text;
