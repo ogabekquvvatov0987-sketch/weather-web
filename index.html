@@ -62,6 +62,8 @@ body {
     width: auto;
     height: auto;
     z-index: -100;
+    filter: blur(8px); /* Orqa fonni xiralashtirish */
+    transform: scale(1.1); /* Xiralashgan chetlarni yopish uchun */
     object-fit: cover;
     transition: opacity 1s ease-in-out;
 }
@@ -369,8 +371,8 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 <body>
 
 <!-- Animated Video Background -->
-<video autoplay muted loop playsinline id="bg-video">
-    <!-- Source JS orqali boshqariladi -->
+<video autoplay loop playsinline id="bg-video">
+    <!-- Source JS orqali boshqariladi, ovoz uchun 'muted' olib tashlandi -->
 </video>
 
 <!-- Loading Screen -->
@@ -419,6 +421,10 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     </div>
 </div>
 
+<!-- Sound Effects -->
+<audio id="click-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_23b3757d97.mp3" preload="auto"></audio>
+<audio id="loading-sound" src="https://cdn.pixabay.com/download/audio/2022/10/26/audio_a2b373266b.mp3" preload="auto" loop></audio>
+
 <script>
 // API kalitni URL parametridan olish (Bot orqali yuboriladi)
 const urlParams = new URLSearchParams(window.location.search);
@@ -429,6 +435,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const loader = document.getElementById('loader-wrapper');
     const progressCircle = document.getElementById('progressCircle');
     const progressText = document.getElementById('progressText');
+    const loadingSound = document.getElementById('loading-sound');
+
+    // Play loading sound
+    if (loadingSound) {
+        loadingSound.play().catch(e => console.warn("Yuklanish ovozini avtomatik ijro etish bloklandi."));
+    }
     
     let percentage = 0;
     const duration = 5000; // 5 soniya
@@ -444,6 +456,11 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => {
                 loader.style.opacity = '0';
                 loader.style.visibility = 'hidden';
+                // Stop loading sound
+                if (loadingSound) {
+                    loadingSound.pause();
+                    loadingSound.currentTime = 0;
+                }
             }, 500);
         }
         
@@ -594,33 +611,34 @@ function updateBackgroundVideo(conditionText, isDay) {
     const text = conditionText.toLowerCase();
     let newSrc = "";
 
-    // Video havolalari (HD 1080p)
+    // Aniq ob-havo uchun video havolalari (HD 1080p)
     const videos = {
         thunder: "https://videos.pexels.com/video-files/6992288/6992288-hd_1920_1080_25fps.mp4",
-        rain: "https://videos.pexels.com/video-files/1732934/1732934-hd_1920_1080_30fps.mp4",
-        snow: "https://videos.pexels.com/video-files/857032/857032-hd_1920_1080_30fps.mp4",
-        fog: "https://videos.pexels.com/video-files/2833497/2833497-hd_1920_1080_25fps.mp4",
-        clouds: "https://videos.pexels.com/video-files/855344/855344-hd_1920_1080_24fps.mp4",
+        rainDay: "https://videos.pexels.com/video-files/1732934/1732934-hd_1920_1080_30fps.mp4",
+        rainNight: "https://videos.pexels.com/video-files/8033595/8033595-hd_1920_1080_25fps.mp4",
+        snow: "https://videos.pexels.com/video-files/3253429/3253429-hd_1920_1080_25fps.mp4", // Kun/tun uchun mos
+        fogDay: "https://videos.pexels.com/video-files/2833497/2833497-hd_1920_1080_25fps.mp4",
+        fogNight: "https://videos.pexels.com/video-files/5432943/5432943-hd_1920_1080_25fps.mp4",
+        cloudsDay: "https://videos.pexels.com/video-files/855344/855344-hd_1920_1080_24fps.mp4",
+        cloudsNight: "https://videos.pexels.com/video-files/5794557/5794557-hd_1920_1080_25fps.mp4",
         clearDay: "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4",
-        night: "https://videos.pexels.com/video-files/3124151/3124151-hd_1920_1080_25fps.mp4"
+        clearNight: "https://videos.pexels.com/video-files/3124151/3124151-hd_1920_1080_25fps.mp4"
     };
 
     if (text.includes("thunder") || text.includes("chaqmoq")) {
         newSrc = videos.thunder;
     } else if (text.includes("rain") || text.includes("drizzle") || text.includes("yomg'ir")) {
-        newSrc = videos.rain;
+        newSrc = isDay ? videos.rainDay : videos.rainNight;
     } else if (text.includes("snow") || text.includes("qor") || text.includes("blizzard")) {
-        newSrc = videos.snow;
+        newSrc = videos.snow; // Bu video kun va tun uchun mos keladi
     } else if (text.includes("mist") || text.includes("fog") || text.includes("tuman")) {
-        newSrc = videos.fog;
-    } else if (!isDay) {
-        // Tun (har qanday bulutli yoki ochiq havo uchun)
-        newSrc = videos.night;
+        newSrc = isDay ? videos.fogDay : videos.fogNight;
     } else if (text.includes("cloud") || text.includes("overcast") || text.includes("bulut")) {
-        // Kunduzgi bulutli
-        newSrc = videos.clouds;
+        newSrc = isDay ? videos.cloudsDay : videos.cloudsNight;
+    } else if (!isDay) { // Ochiq tun
+        newSrc = videos.clearNight;
     } else {
-        // Kunduzgi ochiq (default)
+        // Ochiq kun (default)
         newSrc = videos.clearDay;
     }
 
@@ -630,13 +648,12 @@ function updateBackgroundVideo(conditionText, isDay) {
         setTimeout(() => {
             videoEl.src = newSrc;
             videoEl.load();
-            
             const playPromise = videoEl.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => {
                     videoEl.style.opacity = 1;
                 }).catch(error => {
-                    console.error("Video play error:", error);
+                    console.warn("Video avtomatik ijro etilmadi. Bu ovozli videolar uchun normal holat.", error);
                     videoEl.style.opacity = 1;
                 });
             }
@@ -747,6 +764,17 @@ if (window.Telegram?.WebApp) {
 
 // Boshlang'ich sozlamalar
 setLang('uz');
+
+// Tugma bosish uchun ovoz
+const clickSound = document.getElementById('click-sound');
+document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'BUTTON') {
+        if (clickSound) {
+            clickSound.currentTime = 0;
+            clickSound.play().catch(e => console.warn("Klik ovozini ijro etishda xato."));
+        }
+    }
+});
 </script>
 
 </body>
