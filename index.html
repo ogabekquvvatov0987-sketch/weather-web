@@ -369,8 +369,8 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 <body>
 
 <!-- Animated Video Background -->
-<video autoplay muted loop id="bg-video">
-    <source src="https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4" type="video/mp4">
+<video autoplay muted loop playsinline id="bg-video">
+    <!-- Source JS orqali boshqariladi -->
 </video>
 
 <!-- Loading Screen -->
@@ -591,42 +591,55 @@ function getLocation() {
 // Orqa fonni ob-havoga qarab o'zgartirish
 function updateBackgroundVideo(conditionText, isDay) {
     const videoEl = document.getElementById('bg-video');
-    const currentSrc = videoEl.querySelector('source').getAttribute('src');
     const text = conditionText.toLowerCase();
     let newSrc = "";
 
-    // Pexels video URLs
+    // Video havolalari (HD 1080p)
+    const videos = {
+        thunder: "https://videos.pexels.com/video-files/6992288/6992288-hd_1920_1080_25fps.mp4",
+        rain: "https://videos.pexels.com/video-files/1732934/1732934-hd_1920_1080_30fps.mp4",
+        snow: "https://videos.pexels.com/video-files/857032/857032-hd_1920_1080_30fps.mp4",
+        fog: "https://videos.pexels.com/video-files/2833497/2833497-hd_1920_1080_25fps.mp4",
+        clouds: "https://videos.pexels.com/video-files/855344/855344-hd_1920_1080_24fps.mp4",
+        clearDay: "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4",
+        night: "https://videos.pexels.com/video-files/3124151/3124151-hd_1920_1080_25fps.mp4"
+    };
+
     if (text.includes("thunder") || text.includes("chaqmoq")) {
-        // Chaqmoq
-        newSrc = "https://videos.pexels.com/video-files/6992288/6992288-hd_1920_1080_25fps.mp4";
+        newSrc = videos.thunder;
     } else if (text.includes("rain") || text.includes("drizzle") || text.includes("yomg'ir")) {
-        // Yomg'ir
-        newSrc = "https://videos.pexels.com/video-files/1732934/1732934-hd_1920_1080_30fps.mp4";
+        newSrc = videos.rain;
     } else if (text.includes("snow") || text.includes("qor") || text.includes("blizzard")) {
-        // Qor
-        newSrc = "https://videos.pexels.com/video-files/3253429/3253429-hd_1920_1080_25fps.mp4";
+        newSrc = videos.snow;
     } else if (text.includes("mist") || text.includes("fog") || text.includes("tuman")) {
-        // Tuman
-        newSrc = "https://videos.pexels.com/video-files/2833497/2833497-hd_1920_1080_25fps.mp4";
-    } else if (text.includes("cloud") || text.includes("overcast") || text.includes("bulut")) {
-        // Bulutli
-        newSrc = "https://videos.pexels.com/video-files/855344/855344-hd_1920_1080_24fps.mp4";
+        newSrc = videos.fog;
     } else if (!isDay) {
-        // Tun (ochiq havo)
-        newSrc = "https://videos.pexels.com/video-files/3124151/3124151-hd_1920_1080_25fps.mp4";
+        // Tun (har qanday bulutli yoki ochiq havo uchun)
+        newSrc = videos.night;
+    } else if (text.includes("cloud") || text.includes("overcast") || text.includes("bulut")) {
+        // Kunduzgi bulutli
+        newSrc = videos.clouds;
     } else {
-        // Kun (ochiq havo - default)
-        newSrc = "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4";
+        // Kunduzgi ochiq (default)
+        newSrc = videos.clearDay;
     }
 
     // Agar video o'zgargan bo'lsa, yangilash
-    if (newSrc && newSrc !== currentSrc) {
+    if (videoEl.src !== newSrc) {
         videoEl.style.opacity = 0; // Sekin o'tish uchun
         setTimeout(() => {
-            videoEl.querySelector('source').setAttribute('src', newSrc);
+            videoEl.src = newSrc;
             videoEl.load();
-            videoEl.play();
-            videoEl.style.opacity = 1;
+            
+            const playPromise = videoEl.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    videoEl.style.opacity = 1;
+                }).catch(error => {
+                    console.error("Video play error:", error);
+                    videoEl.style.opacity = 1;
+                });
+            }
         }, 500);
     }
 }
