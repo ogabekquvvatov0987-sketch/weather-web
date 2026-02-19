@@ -28,12 +28,12 @@
 body.dark-mode {
     /* Tun rejimi */
     --text-color: #e0e0e0;
-    --glass-bg: rgba(0, 0, 0, 0.4); /* More transparent card */
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(0, 0, 0, 0.3); /* Karta ajralib turishi uchun (oldin: 0.4) */
+    --glass-border: rgba(255, 255, 255, 0.15); /* Chegara chizig'i yorqinroq (oldin: 0.1) */
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
     --input-bg: rgba(0, 0, 0, 0.4);
-    --btn-bg: rgba(255, 255, 255, 0.1); /* Light glass button */
-    --btn-hover: rgba(255, 255, 255, 0.2); /* Lighter hover */
+    --btn-bg: rgba(255, 255, 255, 0.12); /* Tugma ajralib turishi uchun (oldin: 0.1) */
+    --btn-hover: rgba(255, 255, 255, 0.22); /* Lighter hover (oldin: 0.2) */
 }
 
 html, body {
@@ -448,6 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const loader = document.getElementById('loader-wrapper');
     const progressCircle = document.getElementById('progressCircle');
     const progressText = document.getElementById('progressText');
+    const videoEl = document.getElementById('bg-video');
 
     // Initialize theme state first
     const savedThemeState = localStorage.getItem('isDarkMode');
@@ -455,6 +456,16 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.toggle('dark-mode', isDarkMode);
     document.getElementById('btn_dark').classList.toggle('active', isDarkMode);
     document.getElementById('btn_light').classList.toggle('active', !isDarkMode);
+
+    // YUKLANGANDA MAVZUGA MOS VIDEO O'RNATISH
+    // Bu sahifa ochilganda qora fon bo'lib qolishini oldini oladi
+    if (isDarkMode) {
+        videoEl.src = "https://videos.pexels.com/video-files/2103949/2103949-hd_1920_1080_30fps.mp4";
+    } else {
+        videoEl.src = "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4";
+    }
+    videoEl.load();
+    videoEl.play().catch(e => {}); // Ba'zi brauzerlarda avtomatik ijro etish bloklanishi mumkin
 
     // Set default device view
     setDevice('desktop');
@@ -670,7 +681,7 @@ function updateBackgroundVideo(conditionText, apiIsDay) {
         cloudsDay: "https://videos.pexels.com/video-files/855344/855344-hd_1920_1080_24fps.mp4",
         cloudsNight: "https://videos.pexels.com/video-files/5794557/5794557-hd_1920_1080_25fps.mp4",
         clearDay: "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4",
-        clearNight: "https://videos.pexels.com/video-files/2889491/2889491-hd_1920_1080_25fps.mp4" // Yorqinroq Nyu-York tuni
+        clearNight: "https://videos.pexels.com/video-files/2103949/2103949-hd_1920_1080_30fps.mp4" // Yorqin Nyu-York tuni (Times Square)
     };
 
     if (text.includes("thunder") || text.includes("chaqmoq")) {
