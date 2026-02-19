@@ -28,12 +28,12 @@
 body.dark-mode {
     /* Tun rejimi */
     --text-color: #e0e0e0;
-    --glass-bg: rgba(0, 0, 0, 0.5); /* Slightly less opaque */
+    --glass-bg: rgba(0, 0, 0, 0.4); /* More transparent card */
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
     --input-bg: rgba(0, 0, 0, 0.4);
-    --btn-bg: rgba(0, 0, 0, 0.3); /* Slightly more opaque */
-    --btn-hover: rgba(255, 255, 255, 0.2);
+    --btn-bg: rgba(255, 255, 255, 0.1); /* Light glass button */
+    --btn-hover: rgba(255, 255, 255, 0.2); /* Lighter hover */
 }
 
 html, body {
@@ -670,7 +670,7 @@ function updateBackgroundVideo(conditionText, apiIsDay) {
         cloudsDay: "https://videos.pexels.com/video-files/855344/855344-hd_1920_1080_24fps.mp4",
         cloudsNight: "https://videos.pexels.com/video-files/5794557/5794557-hd_1920_1080_25fps.mp4",
         clearDay: "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4",
-        clearNight: "https://videos.pexels.com/video-files/3129957/3129957-hd_1920_1080_25fps.mp4" // Aniqroq shahar tuni (chiroqlar va mashinalar)
+        clearNight: "https://videos.pexels.com/video-files/2889491/2889491-hd_1920_1080_25fps.mp4" // Yorqinroq Nyu-York tuni
     };
 
     if (text.includes("thunder") || text.includes("chaqmoq")) {
@@ -696,7 +696,7 @@ function updateBackgroundVideo(conditionText, apiIsDay) {
         setTimeout(() => {
             videoEl.src = newSrc;
             videoEl.load();
-            videoEl.playbackRate = 0.6; // Videoni yanada sekinlashtirish
+            videoEl.playbackRate = 0.5; // Videoni yanada sekinlashtirish (qotishni kamaytirish uchun)
             const playPromise = videoEl.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => {
