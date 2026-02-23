@@ -62,8 +62,8 @@ body {
     width: auto;
     height: auto;
     z-index: -100;
-    filter: blur(0px); /* Optimizatsiya: Eski qurilmalarda qotmasligi uchun xiralik olib tashlandi yoki kamaytirildi */
-    transform: scale(1.2); /* Xiralashgan chetlarni yopish uchun kattalashtirildi */
+    filter: blur(12px); /* Talab bo'yicha xiralashtirildi */
+    transform: scale(1.05); /* Kesilib qolishni kamaytirish uchun masshtab kichraytirildi */
     object-fit: cover;
     transition: opacity 3s ease-in-out; /* Almashish yanada sekinlashtirildi */
     will-change: opacity; /* Optimizatsiya */
@@ -397,7 +397,8 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 /* SOAT VIDJETI (O'zbekiston vaqti) */
 .clock-widget {
     position: fixed;
-    top: 20px;
+    top: auto;
+    bottom: 20px; /* Pastki chap burchakka o'tkazildi */
     left: 20px;
     background: var(--glass-bg);
     backdrop-filter: blur(15px);
@@ -422,6 +423,11 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     font-size: 12px;
     opacity: 0.8;
     text-transform: capitalize;
+}
+/* Sekundlar uchun animatsiya */
+.clock-seconds {
+    font-size: 18px;
+    opacity: 0.8;
 }
 
 /* BLOKLANGAN FOYDALANUVCHI EKRANI */
@@ -467,7 +473,7 @@ button:active { transform: scale(0.95); transform: translateY(0); }
         <div class="progress-circle" id="progressCircle" style="--progress: 0deg;">
             <span class="progress-text" id="progressText">0%</span>
         </div>
-        <p class="loading-msg">Sahifa yuklanmoqda, iltimos kuting...</p>
+        <p class="loading-msg" id="loadingText">...</p>
     </div>
 </div>
 
@@ -527,6 +533,7 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 const urlParams = new URLSearchParams(window.location.search);
 let apiKey = urlParams.get('api_key');
 const isBanned = urlParams.get('is_banned') === 'true' || urlParams.get('is_banned') === '1';
+const urlLang = urlParams.get('lang') || 'uz'; // URL dan tilni olish
 
 // Global variables to store current weather info
 let currentWeatherConditionText = "";
@@ -538,6 +545,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const progressCircle = document.getElementById('progressCircle');
     const progressText = document.getElementById('progressText');
     const videoEl = document.getElementById('bg-video');
+    
+    // Yuklash matnini tilga moslash
+    const loadingTexts = {
+        uz: "Sahifa yuklanmoqda, iltimos kuting...",
+        ru: "Страница загружается, пожалуйста, подождите...",
+        en: "Page is loading, please wait..."
+    };
+    document.getElementById('loadingText').innerText = loadingTexts[urlLang] || loadingTexts['uz'];
 
     // Bloklanganlikni tekshirish
     if (isBanned) {
@@ -686,7 +701,7 @@ const translations = {
     }
 };
 
-let currentLang = 'uz';
+let currentLang = urlLang; // Boshlang'ich til URL dan olinadi
 
 function setLang(lang) {
     currentLang = lang;
@@ -951,14 +966,23 @@ function updateClock() {
     const t = translations[currentLang];
     
     // O'zbekiston vaqti (UTC+5)
-    const optionsTime = { timeZone: 'Asia/Tashkent', hour: '2-digit', minute: '2-digit', hour12: false };
+    const optionsTime = { timeZone: 'Asia/Tashkent', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
     const timeString = now.toLocaleTimeString('en-US', optionsTime);
     
     // Sana (Tilga moslashgan)
     const optionsDate = { timeZone: 'Asia/Tashkent', weekday: 'long', day: 'numeric', month: 'long' };
     const dateString = now.toLocaleDateString(t.date_locale, optionsDate);
     
-    document.getElementById('clockTime').innerText = timeString;
+    // Sekundlarni kichikroq qilish uchun HTML formatlash
+    const [time, period] = timeString.split(' '); // AM/PM bo'lsa ajratish (bizda 24 soatlik)
+    // timeString masalan "14:30:45"
+    const parts = timeString.split(':');
+    if (parts.length === 3) {
+        document.getElementById('clockTime').innerHTML = `${parts[0]}:${parts[1]}<span class="clock-seconds">:${parts[2]}</span>`;
+    } else {
+        document.getElementById('clockTime').innerText = timeString;
+    }
+    
     document.getElementById('clockDate').innerText = dateString;
 }
 
@@ -983,7 +1007,7 @@ if (window.Telegram?.WebApp) {
 }
 
 // Boshlang'ich sozlamalar
-setLang('uz');
+setLang(urlLang);
 
 </script>
 
