@@ -62,7 +62,7 @@ body {
     width: auto;
     height: auto;
     z-index: -100;
-    filter: blur(8px); /* Orqa fonni xiralashtirish */
+    filter: blur(0px); /* Optimizatsiya: Eski qurilmalarda qotmasligi uchun xiralik olib tashlandi yoki kamaytirildi */
     transform: scale(1.2); /* Xiralashgan chetlarni yopish uchun kattalashtirildi */
     object-fit: cover;
     transition: opacity 3s ease-in-out; /* Almashish yanada sekinlashtirildi */
@@ -207,7 +207,7 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     border: 1px solid var(--glass-border);
     display: flex;
     flex-direction: row; /* Gorizontal */
-    flex-wrap: wrap;
+    flex-wrap: nowrap; /* iPhone stili uchun bir qatorda */
     justify-content: space-around;
     gap: 10px;
     z-index: 1000;
@@ -224,32 +224,48 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 }
 
 .settings-group {
+    position: relative;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 4px;
     gap: 5px;
     flex: 1;
-    min-width: 80px;
     align-items: center;
+    justify-content: space-between;
 }
 
-.settings-label {
-    font-size: 12px;
-    opacity: 0.8;
-    text-align: center;
+/* Suyuq o'tish effekti uchun orqa fon (Segmented Control) */
+.sliding-bg {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    height: calc(100% - 8px);
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .icon-btn {
-    background: rgba(255,255,255,0.2);
+    background: transparent;
     padding: 8px;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 14px;
     width: 100%;
+    border: none;
+    z-index: 1; /* Slayder ustida turishi uchun */
+    color: var(--text-color);
+    transition: color 0.3s;
 }
 .icon-btn.active {
-    background: rgba(46, 204, 113, 0.8); /* Yashil rang (aktiv holat) */
-    border: 1px solid #2ecc71;
-    color: white;
-    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    box-shadow: none;
 }
 
 .details-grid {
@@ -377,12 +393,71 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     50% { opacity: 1; }
     100% { opacity: 0.5; }
 }
+
+/* SOAT VIDJETI (O'zbekiston vaqti) */
+.clock-widget {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    padding: 10px 20px;
+    border-radius: 20px;
+    color: var(--text-color);
+    z-index: 900;
+    box-shadow: var(--glass-shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    transition: all 0.3s ease;
+}
+.clock-time {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+.clock-date {
+    font-size: 12px;
+    opacity: 0.8;
+    text-transform: capitalize;
+}
+
+/* BLOKLANGAN FOYDALANUVCHI EKRANI */
+#blocked-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 99999; /* Eng yuqorida */
+    display: none; /* Default yopiq */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+}
+#blocked-overlay h1 {
+    font-size: 50px;
+    margin-bottom: 20px;
+}
+#blocked-overlay p {
+    font-size: 18px;
+    color: #fff;
+    max-width: 400px;
+    line-height: 1.5;
+}
 </style>
 </head>
 <body>
 
 <!-- Animated Video Background -->
-<video autoplay loop playsinline muted id="bg-video">
+<!-- Optimizatsiya: preload="auto" qo'shildi -->
+<video autoplay loop playsinline muted preload="auto" id="bg-video">
     <!-- Source JS orqali boshqariladi, ovoz boshida o'chirilgan -->
 </video>
 
@@ -396,23 +471,36 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     </div>
 </div>
 
+<!-- Bloklangan foydalanuvchi ekrani -->
+<div id="blocked-overlay">
+    <h1>🚫</h1>
+    <p id="blocked-msg">Siz bloklangansiz!</p>
+</div>
+
+<!-- Soat Vidjeti -->
+<div class="clock-widget" id="clockWidget">
+    <div class="clock-time" id="clockTime">--:--</div>
+    <div class="clock-date" id="clockDate">-- ---</div>
+</div>
+
 <!-- Sozlamalar Tugmasi -->
 <button class="settings-toggle" onclick="toggleSettings()">⚙️</button>
 
 <!-- Sozlamalar Paneli -->
 <div class="settings-panel" id="settingsPanel">
     <div class="settings-group">
-        <span class="settings-label" id="lbl_device">Qurilma</span>
+        <!-- Suyuq fon -->
+        <div class="sliding-bg" id="slide_device"></div>
         <button class="icon-btn" onclick="setDevice('desktop')" id="btn_desktop">💻</button>
         <button class="icon-btn" onclick="setDevice('mobile')" id="btn_mobile">📱</button>
     </div>
     <div class="settings-group">
-        <span class="settings-label" id="lbl_theme">Mavzu</span>
+        <div class="sliding-bg" id="slide_theme"></div>
         <button class="icon-btn" onclick="setTheme('light')" id="btn_light">☀️</button>
         <button class="icon-btn" onclick="setTheme('dark')" id="btn_dark">🌙</button>
     </div>
     <div class="settings-group">
-        <span class="settings-label" id="lbl_lang">Til</span>
+        <div class="sliding-bg" id="slide_lang"></div>
         <button class="icon-btn" onclick="setLang('uz')" id="btn_lang_uz">🇺🇿 UZ</button>
         <button class="icon-btn" onclick="setLang('ru')" id="btn_lang_ru">🇷🇺 RU</button>
         <button class="icon-btn" onclick="setLang('en')" id="btn_lang_en">🇬🇧 EN</button>
@@ -438,6 +526,7 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 // API kalitni URL parametridan olish (Bot orqali yuboriladi)
 const urlParams = new URLSearchParams(window.location.search);
 let apiKey = urlParams.get('api_key');
+const isBanned = urlParams.get('is_banned') === 'true' || urlParams.get('is_banned') === '1';
 
 // Global variables to store current weather info
 let currentWeatherConditionText = "";
@@ -450,18 +539,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const progressText = document.getElementById('progressText');
     const videoEl = document.getElementById('bg-video');
 
+    // Bloklanganlikni tekshirish
+    if (isBanned) {
+        showBlockedScreen();
+        // Loader'ni darhol o'chirish yoki blok ekranini ustiga chiqarish
+    }
+
     // Initialize theme state first
     const savedThemeState = localStorage.getItem('isDarkMode');
     const isDarkMode = (savedThemeState === 'true');
     document.body.classList.toggle('dark-mode', isDarkMode);
-    document.getElementById('btn_dark').classList.toggle('active', isDarkMode);
-    document.getElementById('btn_light').classList.toggle('active', !isDarkMode);
+    
+    // UI holatini yangilash (Slayderlar)
+    updateToggleUI('theme', isDarkMode ? 'dark' : 'light');
 
     // YUKLANGANDA MAVZUGA MOS VIDEO O'RNATISH
-    // Bu sahifa ochilganda qora fon bo'lib qolishini oldini oladi
     if (isDarkMode) {
-        videoEl.src = "https://videos.pexels.com/video-files/2103949/2103949-hd_1920_1080_30fps.mp4";
+        // Tungi rejim: Aylanayotgan Yer shari (Space/Earth)
+        videoEl.src = "https://videos.pexels.com/video-files/1851190/1851190-hd_1920_1080_25fps.mp4";
     } else {
+        // Kunduzgi rejim: Ochiq osmon
         videoEl.src = "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4";
     }
     videoEl.load();
@@ -469,6 +566,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Set default device view
     setDevice('desktop');
+    
+    // Soatni ishga tushirish
+    setInterval(updateClock, 1000);
+    updateClock();
     
     let percentage = 0;
     const duration = 5000; // 5 soniya
@@ -485,7 +586,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 loader.style.opacity = '0';
                 loader.style.visibility = 'hidden';
                 // Sahifa yuklangach, avtomatik joylashuv bo'yicha ob-havoni ko'rsatish
-                getLocation();
+                // TALAB: Avtomatik ob-havo ko'rish bekor qilindi
+                // getLocation(); 
             }, 500);
         }
         
@@ -526,7 +628,9 @@ const translations = {
         lbl_sound: "Ovoz",
         g_storm_watch: "Magnit bo'roni kutilmoqda",
         loc_access: "📍 Joylashuvni aniqlash...",
-        loc_denied: "❌ Joylashuvga ruxsat berilmadi"
+        loc_denied: "❌ Joylashuvga ruxsat berilmadi",
+        blocked_msg: "🚫 Siz bloklangansiz!\nIltimos, admin bilan bog'laning yoki kuting.",
+        date_locale: "uz-UZ"
     },
     ru: {
         title: "🌤 Погода",
@@ -550,7 +654,9 @@ const translations = {
         lbl_sound: "Звук",
         g_storm_watch: "Ожидается магнитная буря",
         loc_access: "📍 Определение местоположения...",
-        loc_denied: "❌ Доступ к геопозиции запрещен"
+        loc_denied: "❌ Доступ к геопозиции запрещен",
+        blocked_msg: "🚫 Вы заблокированы!\nПожалуйста, свяжитесь с админом или подождите.",
+        date_locale: "ru-RU"
     },
     en: {
         title: "🌤 Weather",
@@ -574,7 +680,9 @@ const translations = {
         lbl_sound: "Sound",
         g_storm_watch: "Geomagnetic storm watch",
         loc_access: "📍 Locating...",
-        loc_denied: "❌ Location denied"
+        loc_denied: "❌ Location denied",
+        blocked_msg: "🚫 You are blocked!\nPlease contact admin or wait.",
+        date_locale: "en-US"
     }
 };
 
@@ -587,36 +695,27 @@ function setLang(lang) {
     document.getElementById('app_title').innerText = t.title;
     document.getElementById('city').placeholder = t.placeholder;
     document.getElementById('btn_check').innerText = t.btn;
-    document.getElementById('lbl_device').innerText = t.lbl_device;
-    document.getElementById('lbl_theme').innerText = t.lbl_theme;
-    document.getElementById('lbl_lang').innerText = t.lbl_lang;
+    document.getElementById('blocked-msg').innerText = t.blocked_msg;
     
-    // Til tugmasini aktiv qilish
-    ['uz', 'ru', 'en'].forEach(l => {
-        const btn = document.getElementById(`btn_lang_${l}`);
-        if (btn) {
-            btn.classList.toggle('active', l === lang);
-        }
-    });
+    // Suyuq tugma holatini yangilash
+    updateToggleUI('lang', lang);
     
     // Agar natija ko'rsatilgan bo'lsa, uni tozalash yoki yangilash mumkin
     document.getElementById('result').innerHTML = "";
+    
+    // Soatni yangilash (sana tili o'zgarishi uchun)
+    updateClock();
 }
 
 function setDevice(mode) {
     const wrapper = document.getElementById('app-wrapper');
-    const btnDesktop = document.getElementById('btn_desktop');
-    const btnMobile = document.getElementById('btn_mobile');
 
     if (mode === 'mobile') {
         wrapper.classList.add('mobile-mode');
-        btnMobile.classList.add('active');
-        btnDesktop.classList.remove('active');
     } else {
         wrapper.classList.remove('mobile-mode');
-        btnDesktop.classList.add('active');
-        btnMobile.classList.remove('active');
     }
+    updateToggleUI('device', mode);
 }
 
 function setTheme(theme) {
@@ -624,23 +723,53 @@ function setTheme(theme) {
     document.body.classList.toggle('dark-mode', isDarkMode);
     localStorage.setItem('isDarkMode', isDarkMode);
 
-    // Tugmalarni yangilash
-    document.getElementById('btn_dark').classList.toggle('active', isDarkMode);
-    document.getElementById('btn_light').classList.toggle('active', !isDarkMode);
+    // UI yangilash
+    updateToggleUI('theme', theme);
 
     // Fonni yangilash
     if (currentWeatherConditionText) {
         updateBackgroundVideo(currentWeatherConditionText, currentWeatherIsDay);
+    } else {
+        // Default fonni yangilash
+        const videoEl = document.getElementById('bg-video');
+        if (isDarkMode) {
+            videoEl.src = "https://videos.pexels.com/video-files/1851190/1851190-hd_1920_1080_25fps.mp4"; // Yer shari
+        } else {
+            videoEl.src = "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4"; // Ochiq osmon
+        }
+        videoEl.play().catch(e=>{});
+    }
+}
+
+// Suyuq tugma (Segmented Control) logikasi
+function updateToggleUI(group, value) {
+    const slider = document.getElementById(`slide_${group}`);
+    const btn = document.getElementById(`btn_${group}_${value}`) || document.getElementById(`btn_${value}`);
+    
+    if (slider && btn) {
+        // Barcha tugmalardan active klassini olish
+        const parent = btn.parentElement;
+        const buttons = parent.querySelectorAll('.icon-btn');
+        buttons.forEach(b => b.classList.remove('active'));
+        
+        // Tanlangan tugmaga active berish
+        btn.classList.add('active');
+        
+        // Slayderni joylashtirish
+        slider.style.width = `${btn.offsetWidth}px`;
+        slider.style.left = `${btn.offsetLeft}px`;
     }
 }
 
 function toggleSettings() {
+    if (isBanned) return; // Bloklangan bo'lsa ochilmaydi
     const panel = document.getElementById('settingsPanel');
     panel.classList.toggle('active');
 }
 
 // Joylashuvni aniqlash
 function getLocation() {
+    if (isBanned) return;
     const resultDiv = document.getElementById("result");
     const t = translations[currentLang];
     
@@ -681,7 +810,7 @@ function updateBackgroundVideo(conditionText, apiIsDay) {
         cloudsDay: "https://videos.pexels.com/video-files/855344/855344-hd_1920_1080_24fps.mp4",
         cloudsNight: "https://videos.pexels.com/video-files/5794557/5794557-hd_1920_1080_25fps.mp4",
         clearDay: "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4",
-        clearNight: "https://videos.pexels.com/video-files/2103949/2103949-hd_1920_1080_30fps.mp4" // Yorqin Nyu-York tuni (Times Square)
+        clearNight: "https://videos.pexels.com/video-files/1851190/1851190-hd_1920_1080_25fps.mp4" // Aylanayotgan Yer shari (Space)
     };
 
     if (text.includes("thunder") || text.includes("chaqmoq")) {
@@ -743,6 +872,7 @@ async function getGeomagneticStormInfo() {
 }
 
 async function getWeather() {
+    if (isBanned) return;
     const city = document.getElementById("city").value;
     const resultDiv = document.getElementById("result");
     const t = translations[currentLang];
@@ -813,6 +943,34 @@ async function fetchWeather(query, lon, isCoords) {
         resultDiv.innerHTML = `${t.error_net}<br><small>${error.message}</small>`;
         console.error(error);
     }
+}
+
+// O'zbekiston vaqti soati
+function updateClock() {
+    const now = new Date();
+    const t = translations[currentLang];
+    
+    // O'zbekiston vaqti (UTC+5)
+    const optionsTime = { timeZone: 'Asia/Tashkent', hour: '2-digit', minute: '2-digit', hour12: false };
+    const timeString = now.toLocaleTimeString('en-US', optionsTime);
+    
+    // Sana (Tilga moslashgan)
+    const optionsDate = { timeZone: 'Asia/Tashkent', weekday: 'long', day: 'numeric', month: 'long' };
+    const dateString = now.toLocaleDateString(t.date_locale, optionsDate);
+    
+    document.getElementById('clockTime').innerText = timeString;
+    document.getElementById('clockDate').innerText = dateString;
+}
+
+// Bloklangan ekran funksiyasi
+function showBlockedScreen() {
+    const overlay = document.getElementById('blocked-overlay');
+    overlay.style.display = 'flex';
+    
+    // Barcha input va tugmalarni o'chirish
+    const inputs = document.querySelectorAll('input, button');
+    inputs.forEach(el => el.disabled = true);
+    document.getElementById('app-wrapper').style.filter = 'blur(5px)';
 }
 
 // Telegram Web App SDK ni ishga tushirish
