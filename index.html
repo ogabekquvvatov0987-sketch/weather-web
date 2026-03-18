@@ -366,6 +366,8 @@ button:active { transform: scale(0.95); transform: translateY(0); border-radius:
 }
 
 .loader-content {
+    position: relative;
+    z-index: 2;
     text-align: center;
     color: white;
 }
@@ -509,6 +511,9 @@ button:active { transform: scale(0.95); transform: translateY(0); border-radius:
 
 <!-- Loading Screen -->
 <div id="loader-wrapper">
+    <video autoplay loop muted playsinline id="loader-video">
+        <source src="https://videos.pexels.com/video-files/5359765/5359765-sd_640_360_30fps.mp4" type="video/mp4">
+    </video>
     <div class="loader-content">
         <div class="cloud-loader">
             <div class="cloud">
