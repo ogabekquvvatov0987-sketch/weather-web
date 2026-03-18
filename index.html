@@ -17,7 +17,7 @@
     /* Default fon (Quyoshli osmon) */
     /* --bg-image is deprecated, using video now */
     --text-color: #fff;
-    --glass-bg: rgba(255, 255, 255, 0.08); /* More transparent */
+    --glass-bg: rgba(255, 255, 255, 0.05); /* More transparent */
     --glass-border: rgba(255, 255, 255, 0.15);
     --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
     --input-bg: rgba(255, 255, 255, 0.1);
@@ -28,7 +28,7 @@
 body.dark-mode {
     /* Tun rejimi */
     --text-color: #e0e0e0;
-    --glass-bg: rgba(0, 0, 0, 0.4); /* Karta ajralib turishi uchun (oldin: 0.4) */
+    --glass-bg: rgba(0, 0, 0, 0.25); /* Karta ajralib turishi uchun (oldin: 0.4) */
     --glass-border: rgba(255, 255, 255, 0.15); /* Chegara chizig'i yorqinroq (oldin: 0.1) */
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
     --input-bg: rgba(0, 0, 0, 0.4);
@@ -85,8 +85,8 @@ body {
 /* Glassmorphism Card */
 .card {
     background: var(--glass-bg);
-    backdrop-filter: blur(25px) saturate(180%); /* Kuchliroq blur va to'yinganlik */
-    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    backdrop-filter: blur(25px) saturate(200%); /* Kuchliroq blur va to'yinganlik */
+    -webkit-backdrop-filter: blur(25px) saturate(200%);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
     padding: 30px;
@@ -335,7 +335,8 @@ button:active { transform: scale(0.95); transform: translateY(0); border-radius:
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    background: url('https://images.pexels.com/photos/1420440/pexels-photo-1420440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1') no-repeat center center fixed;
+    background-size: cover;
     z-index: 9999;
     display: flex;
     justify-content: center;
@@ -356,7 +357,7 @@ button:active { transform: scale(0.95); transform: translateY(0); border-radius:
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 20px;
+    margin: 0 auto 20px auto; /* Markazlashtirish */
 }
 
 .cloud {
@@ -417,7 +418,7 @@ button:active { transform: scale(0.95); transform: translateY(0); border-radius:
 /* SOAT VIDJETI (O'zbekiston vaqti) */
 .clock-widget {
     position: fixed;
-    top: 20px;
+    top: 70px;
     left: 20px;
     background: var(--glass-bg);
     backdrop-filter: blur(15px);
@@ -623,6 +624,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // Update UI
         progressText.innerText = Math.round(percentage) + "%";
     }, intervalTime);
+
+    // Oyna o'lchami o'zgarganda slayderlarni to'g'rilash (siliq ishlash uchun)
+    window.addEventListener('resize', () => {
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        updateToggleUI('theme', isDarkMode ? 'dark' : 'light');
+        updateToggleUI('lang', currentLang);
+    });
 });
 
 // Agar kalit yo'q bo'lsa yoki placeholder bo'lsa, zaxira kalitni (WeatherAPI) ishlatamiz
