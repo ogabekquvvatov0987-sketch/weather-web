@@ -346,13 +346,24 @@ button:active { transform: scale(0.95); transform: translateY(0); border-radius:
     left: 0;
     width: 100%;
     height: 100%;
-    background: #000;
     z-index: 9999;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
     transition: opacity 0.5s ease, visibility 0.5s;
+    overflow: hidden;
+}
+
+#loader-wrapper::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: url('https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg') no-repeat center center;
+    background-size: cover;
+    filter: blur(15px) brightness(0.6); /* Tabiat fonini hiralashtirish */
+    transform: scale(1.1);
+    z-index: -1;
 }
 
 .loader-content {
