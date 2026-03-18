@@ -17,10 +17,10 @@
     /* Default fon (Quyoshli osmon) */
     /* --bg-image is deprecated, using video now */
     --text-color: #fff;
-    --glass-bg: rgba(255, 255, 255, 0.1); /* Slightly less opaque */
-    --glass-border: rgba(255, 255, 255, 0.2);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    --input-bg: rgba(0, 0, 0, 0.2);
+    --glass-bg: rgba(255, 255, 255, 0.08); /* More transparent */
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    --input-bg: rgba(255, 255, 255, 0.1);
     --btn-bg: rgba(255, 255, 255, 0.2); /* Slightly more opaque */
     --btn-hover: rgba(255, 255, 255, 0.3);
 }
@@ -28,7 +28,7 @@
 body.dark-mode {
     /* Tun rejimi */
     --text-color: #e0e0e0;
-    --glass-bg: rgba(0, 0, 0, 0.3); /* Karta ajralib turishi uchun (oldin: 0.4) */
+    --glass-bg: rgba(0, 0, 0, 0.4); /* Karta ajralib turishi uchun (oldin: 0.4) */
     --glass-border: rgba(255, 255, 255, 0.15); /* Chegara chizig'i yorqinroq (oldin: 0.1) */
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
     --input-bg: rgba(0, 0, 0, 0.4);
@@ -62,7 +62,7 @@ body {
     width: auto;
     height: auto;
     z-index: -100;
-    filter: blur(12px); /* Talab bo'yicha xiralashtirildi */
+    filter: blur(8px) saturate(120%); /* Optimizatsiya: biroz kamaytirildi, ranglar to'yintirildi */
     transform: scale(1.05); /* Kesilib qolishni kamaytirish uchun masshtab kichraytirildi */
     object-fit: cover;
     transition: opacity 3s ease-in-out; /* Almashish yanada sekinlashtirildi */
@@ -78,45 +78,23 @@ body {
     align-items: center;
     transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     position: relative;
-    overflow: hidden;
+    overflow-y: auto; /* Kichik ekranlarda scroll bo'lishi uchun */
+    padding: 20px;
 }
-
-/* Telefon rejimi */
-#app-wrapper.mobile-mode {
-    width: 375px;
-    height: 812px;
-    border-radius: 40px;
-    border: 12px solid #333;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    overflow-y: auto; /* Scroll bo'lishi uchun */
-}
-
-/* Telefon rejimida ichki elementlarni moslashtirish */
-#app-wrapper.mobile-mode .card {
-    width: 85%; /* Kichikroq kenglik */
-    padding: 15px;
-    margin-top: 40px; /* Tepadan joy */
-}
-#app-wrapper.mobile-mode h1 { font-size: 28px; margin: 5px 0; }
-#app-wrapper.mobile-mode h2 { font-size: 18px; margin-bottom: 10px; }
-#app-wrapper.mobile-mode input { width: 100%; font-size: 14px; padding: 10px; box-sizing: border-box; }
-#app-wrapper.mobile-mode button { font-size: 14px; padding: 10px 15px; }
-#app-wrapper.mobile-mode .details-grid { grid-template-columns: 1fr; gap: 5px; font-size: 13px; }
-#app-wrapper.mobile-mode .input-group { flex-direction: row; width: 100%; }
 
 /* Glassmorphism Card */
 .card {
     background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(25px) saturate(180%); /* Kuchliroq blur va to'yinganlik */
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
     padding: 30px;
-    border-radius: 25px;
+    border-radius: 30px;
     text-align: center;
-    width: 90%;
-    max-width: 320px;
-    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 400px; /* Biroz kengaytirildi */
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 h1 { margin: 10px 0; font-size: 40px; font-weight: 700; }
@@ -136,29 +114,57 @@ input {
     border: 1px solid var(--glass-border);
     border-radius: 15px;
     background: var(--input-bg);
+    backdrop-filter: blur(5px);
     color: #fff;
     outline: none;
     font-size: 16px;
-    transition: 0.3s;
+    transition: all 0.3s ease;
+}
+input:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
 }
 input::placeholder { color: var(--text-color); opacity: 0.7; }
 
 button {
     padding: 12px 25px;
     border: 1px solid var(--glass-border);
-    border-radius: 15px;
+    border-radius: 18px; /* Yumshoqroq burchaklar */
     background: var(--btn-bg);
     color: white;
     cursor: pointer;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
+    letter-spacing: 0.5px;
     backdrop-filter: blur(10px); /* Shaffoflikni oshirish */
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     position: relative;
     overflow: hidden;
 }
-button:hover { background: var(--btn-hover); transform: translateY(-2px); }
+
+/* Suyuq shisha (Liquid Glass) effekti */
+button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: 0.6s;
+}
+button:hover::after {
+    left: 100%;
+}
+
+button:hover { 
+    background: var(--btn-hover); 
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    border-color: rgba(255,255,255,0.4);
+}
 button:active { transform: scale(0.95); transform: translateY(0); }
 
 .location-btn {
@@ -171,8 +177,8 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     position: fixed;
     right: 20px;
     bottom: 20px; /* Yana pastga tushirildi */
-    width: 50px;
-    height: 50px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
@@ -189,14 +195,14 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 }
 .settings-toggle:hover {
     transform: rotate(90deg);
-    background: var(--btn-hover);
+    background: rgba(255, 255, 255, 0.3);
 }
 
 /* Sozlamalar Paneli (Sidebar) */
 .settings-panel {
     position: fixed;
     left: 50%;
-    transform: translateX(-50%) translateY(20px); /* Markazlashtirish */
+    transform: translateX(-50%) translateY(30px); /* Markazlashtirish */
     bottom: 80px; /* Tugma ustida, ozroq pastga */
     width: 90%;
     max-width: 500px;
@@ -215,7 +221,7 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     /* Yashirish uchun */
     opacity: 0;
     visibility: hidden;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy effekt */
 }
 .settings-panel.active {
     opacity: 1;
@@ -275,7 +281,7 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     margin-top: 20px;
     font-size: 14px;
     text-align: left;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.1);
     padding: 15px;
     border-radius: 15px;
 }
@@ -297,14 +303,14 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 @media (max-width: 768px) {
     body {
         font-size: 16px;
-        align-items: flex-start; /* Elementlarni tepadan joylashtirish */
-        padding-top: 20px;
+        /* align-items: flex-start;  Olib tashlandi, markazda turishi chiroyliroq */
     }
     
     .card {
-        width: 95%;
+        width: 100%;
         max-width: 100%;
-        padding: 20px;
+        padding: 25px 20px;
+        border-radius: 25px;
     }
 
     input, button {
@@ -319,16 +325,6 @@ button:active { transform: scale(0.95); transform: translateY(0); }
     }
     .input-group button {
         width: auto;
-    }
-
-    /* Mobil rejimda simulator ramkasini olib tashlash (haqiqiy telefonda) */
-    #app-wrapper.mobile-mode {
-        width: 100%;
-        height: auto;
-        border: none;
-        border-radius: 0;
-        box-shadow: none;
-        overflow-y: visible;
     }
 }
 
@@ -397,7 +393,7 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 /* SOAT VIDJETI (O'zbekiston vaqti) */
 .clock-widget {
     position: fixed;
-    top: auto;
+    top: 20px; /* Tepaga o'tkazildi, mobilga qulay bo'lishi uchun */
     bottom: 20px; /* Pastki chap burchakka o'tkazildi */
     left: 20px;
     background: var(--glass-bg);
@@ -495,12 +491,6 @@ button:active { transform: scale(0.95); transform: translateY(0); }
 <!-- Sozlamalar Paneli -->
 <div class="settings-panel" id="settingsPanel">
     <div class="settings-group">
-        <!-- Suyuq fon -->
-        <div class="sliding-bg" id="slide_device"></div>
-        <button class="icon-btn" onclick="setDevice('desktop')" id="btn_desktop">💻</button>
-        <button class="icon-btn" onclick="setDevice('mobile')" id="btn_mobile">📱</button>
-    </div>
-    <div class="settings-group">
         <div class="sliding-bg" id="slide_theme"></div>
         <button class="icon-btn" onclick="setTheme('light')" id="btn_light">☀️</button>
         <button class="icon-btn" onclick="setTheme('dark')" id="btn_dark">🌙</button>
@@ -579,9 +569,6 @@ document.addEventListener("DOMContentLoaded", () => {
     videoEl.load();
     videoEl.play().catch(e => {}); // Ba'zi brauzerlarda avtomatik ijro etish bloklanishi mumkin
 
-    // Set default device view
-    setDevice('desktop');
-    
     // Soatni ishga tushirish
     setInterval(updateClock, 1000);
     updateClock();
@@ -625,7 +612,6 @@ const translations = {
         title: "🌤 Ob-havo",
         placeholder: "Shahar nomi...",
         btn: "Ko‘rish",
-        device: "Qurilma",
         theme: "Mavzu",
         lang: "Til",
         error_empty: "❗ Shahar nomini kiriting",
@@ -637,7 +623,6 @@ const translations = {
         uv_index: "UV Indeks",
         visibility: "Ko'rinish",
         wind_dir: "Shamol yo'n.",
-        lbl_device: "Qurilma",
         lbl_theme: "Mavzu",
         lbl_lang: "Til",
         lbl_sound: "Ovoz",
@@ -651,7 +636,6 @@ const translations = {
         title: "🌤 Погода",
         placeholder: "Название города...",
         btn: "Показать",
-        device: "Устр-во",
         theme: "Тема",
         lang: "Язык",
         error_empty: "❗ Введите название города",
@@ -663,7 +647,6 @@ const translations = {
         uv_index: "УФ-индекс",
         visibility: "Видимость",
         wind_dir: "Напр. ветра",
-        lbl_device: "Устр-во",
         lbl_theme: "Тема",
         lbl_lang: "Язык",
         lbl_sound: "Звук",
@@ -677,7 +660,6 @@ const translations = {
         title: "🌤 Weather",
         placeholder: "City name...",
         btn: "Check",
-        device: "Device",
         theme: "Theme",
         lang: "Lang",
         error_empty: "❗ Enter city name",
@@ -689,7 +671,6 @@ const translations = {
         uv_index: "UV Index",
         visibility: "Visibility",
         wind_dir: "Wind Dir.",
-        lbl_device: "Device",
         lbl_theme: "Theme",
         lbl_lang: "Lang",
         lbl_sound: "Sound",
@@ -720,17 +701,6 @@ function setLang(lang) {
     
     // Soatni yangilash (sana tili o'zgarishi uchun)
     updateClock();
-}
-
-function setDevice(mode) {
-    const wrapper = document.getElementById('app-wrapper');
-
-    if (mode === 'mobile') {
-        wrapper.classList.add('mobile-mode');
-    } else {
-        wrapper.classList.remove('mobile-mode');
-    }
-    updateToggleUI('device', mode);
 }
 
 function setTheme(theme) {
