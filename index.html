@@ -16,10 +16,10 @@
 :root {
     /* Default fon (Quyoshli osmon) */
     /* --bg-image is deprecated, using video now */
-    --text-color: #fff;
-    --glass-bg: rgba(255, 255, 255, 0.05); /* More transparent */
-    --glass-border: rgba(255, 255, 255, 0.15);
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    --text-color: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.1); /* Yumshoqroq shaffoflik */
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25); /* Yumshoqroq soya */
     --input-bg: rgba(255, 255, 255, 0.1);
     --btn-bg: rgba(255, 255, 255, 0.2); /* Slightly more opaque */
     --btn-hover: rgba(255, 255, 255, 0.3);
@@ -28,10 +28,10 @@
 body.dark-mode {
     /* Tun rejimi */
     --text-color: #e0e0e0;
-    --glass-bg: rgba(0, 0, 0, 0.25); /* Karta ajralib turishi uchun (oldin: 0.4) */
-    --glass-border: rgba(255, 255, 255, 0.15); /* Chegara chizig'i yorqinroq (oldin: 0.1) */
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
-    --input-bg: rgba(0, 0, 0, 0.4);
+    --glass-bg: rgba(0, 0, 0, 0.3); /* Qorong'u va kontrastli */
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); /* Qorong'u soya */
+    --input-bg: rgba(0, 0, 0, 0.35);
     --btn-bg: rgba(255, 255, 255, 0.12); /* Tugma ajralib turishi uchun (oldin: 0.1) */
     --btn-hover: rgba(255, 255, 255, 0.22); /* Lighter hover (oldin: 0.2) */
 }
@@ -60,10 +60,10 @@ body {
     min-width: 100%;
     min-height: 100%;
     width: auto;
-    height: auto;
+    height: auto; /* object-fit: cover; bilan birga yaxshi ishlaydi */
     z-index: -100;
-    filter: blur(8px) saturate(120%); /* Optimizatsiya: biroz kamaytirildi, ranglar to'yintirildi */
-    transform: scale(1.05); /* Kesilib qolishni kamaytirish uchun masshtab kichraytirildi */
+    filter: blur(8px) saturate(180%) brightness(0.9); /* To'yinganlik oshirildi, yorqinlik pasaytirildi */
+    transform: scale(1.1); /* Kadr chetlarini to'ldirish uchun */
     object-fit: cover;
     transition: opacity 3s ease-in-out; /* Almashish yanada sekinlashtirildi */
     will-change: opacity; /* Optimizatsiya */
@@ -71,16 +71,27 @@ body {
 
 /* Asosiy konteyner (Device wrapper) */
 #app-wrapper {
-    width: 100%;
-    min-height: 100vh; /* Klaviatura uchun moslashuvchanlik */
-    height: auto;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column; /* Elementlarni ustma-ust joylashtirish */
     position: relative;
+    width: 100%;
+    min-height: 100vh; /* Klaviatura uchun moslashuvchanlik */
+    height: auto;
     overflow-y: auto; /* Kichik ekranlarda scroll bo'lishi uchun */
     padding: 20px;
+    /* Yuklanish vaqtida yashirish */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
+    will-change: opacity;
+}
+
+/* Yuklanish tugagach ko'rsatish */
+#app-wrapper.visible {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Glassmorphism Card */
@@ -94,8 +105,19 @@ body {
     border-radius: 30px;
     text-align: center;
     width: 100%;
-    max-width: 400px; /* Biroz kengaytirildi */
-    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    max-width: 400px;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.5s ease; /* Silliq "sakrash" effekti */
+    will-change: transform, box-shadow;
+    animation: card-fade-in 1s ease-out 0.5s;
+    animation-fill-mode: backwards; /* Animatsiya boshlanishidan oldin yashirin turadi */
+}
+
+@keyframes card-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 h1 { margin: 10px 0; font-size: 40px; font-weight: 700; }
@@ -130,11 +152,11 @@ input::placeholder { color: var(--text-color); opacity: 0.7; }
 
 /* Input xatolik holati */
 .input-error {
-    border-color: #ff4d4d !important;
-    box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
+    border-color: #ff6b6b !important;
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.6) !important;
 }
 .input-error::placeholder {
-    color: #ff4d4d !important;
+    color: #ff6b6b !important;
     opacity: 1;
 }
 
@@ -149,9 +171,10 @@ button {
     font-weight: 500;
     letter-spacing: 0.5px;
     backdrop-filter: blur(10px); /* Shaffoflikni oshirish */
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Tezroq reaksiya */
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     position: relative;
+    will-change: transform, background, box-shadow;
     overflow: hidden;
 }
 
@@ -171,12 +194,15 @@ button:hover::after {
 }
 
 button:hover { 
-    background: var(--btn-hover); 
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    background: var(--btn-hover);
+    transform: translateY(-2px) scale(1.03); /* Kichikroq, lekin sezilarli ko'tarilish */
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
     border-color: rgba(255,255,255,0.4);
 }
-button:active { transform: scale(0.95); transform: translateY(0); border-radius: 50px; }
+button:active {
+    transform: scale(0.98) translateY(1px); /* Bosganda sezilarli "qimirlash" */
+    transition-duration: 0.1s;
+}
 
 .location-btn {
     background: var(--btn-bg);
@@ -202,10 +228,14 @@ button:active { transform: scale(0.95); transform: translateY(0); border-radius:
     align-items: center;
     backdrop-filter: blur(10px);
     box-shadow: var(--glass-shadow);
-    transition: transform 0.3s, background 0.3s;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+    /* Yuklanish vaqtida yashirish */
+    opacity: 0;
+    visibility: hidden;
+    will-change: transform, opacity;
 }
 .settings-toggle:hover {
-    transform: rotate(90deg);
+    transform: rotate(90deg) scale(1.1);
     background: rgba(255, 255, 255, 0.3);
 }
 
@@ -373,6 +403,20 @@ button:active { transform: scale(0.95); transform: translateY(0); border-radius:
     color: white;
 }
 
+.welcome-msg {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    animation: fadeInWelcome 2s ease-in-out;
+    will-change: opacity, transform;
+}
+
+@keyframes fadeInWelcome {
+    from { opacity: 0; transform: translateY(-15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .cloud-loader {
     position: relative;
     width: 150px;
@@ -512,6 +556,7 @@ button:active { transform: scale(0.95); transform: translateY(0); border-radius:
 
 <!-- Loading Screen -->
 <div id="loader-wrapper">
+    <p class="welcome-msg" id="welcomeText"></p>
     <div class="loader-content">
         <div class="cloud-loader">
             <div class="cloud">
@@ -574,6 +619,7 @@ button:active { transform: scale(0.95); transform: translateY(0); border-radius:
 // API kalitni URL parametridan olish (Bot orqali yuboriladi)
 const urlParams = new URLSearchParams(window.location.search);
 let apiKey = urlParams.get('api_key');
+const userName = urlParams.get('user_name');
 const isBanned = urlParams.get('is_banned') === 'true' || urlParams.get('is_banned') === '1';
 const urlLang = urlParams.get('lang') || 'uz'; // URL dan tilni olish
 
@@ -586,6 +632,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const loader = document.getElementById('loader-wrapper');
     const progressText = document.getElementById('progressText');
     const videoEl = document.getElementById('bg-video');
+    const welcomeTextEl = document.getElementById('welcomeText');
     
     // Yuklash matnini tilga moslash
     const loadingTexts = {
@@ -593,6 +640,14 @@ document.addEventListener("DOMContentLoaded", () => {
         ru: "Страница загружается, пожалуйста, подождите...",
         en: "Page is loading, please wait..."
     };
+    const welcomeTexts = {
+        uz: `Xush kelibsiz, ${userName || 'mehmon'}!`,
+        ru: `Добро пожаловать, ${userName || 'гость'}!`,
+        en: `Welcome, ${userName || 'guest'}!`
+    };
+    if (userName) {
+        welcomeTextEl.innerText = welcomeTexts[urlLang] || welcomeTexts['uz'];
+    }
     document.getElementById('loadingText').innerText = loadingTexts[urlLang] || loadingTexts['uz'];
 
     // Bloklanganlikni tekshirish
@@ -643,9 +698,12 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => {
                 loader.style.opacity = '0';
                 loader.style.visibility = 'hidden';
-                // Sahifa yuklangach, avtomatik joylashuv bo'yicha ob-havoni ko'rsatish
-                // TALAB: Avtomatik ob-havo ko'rish bekor qilindi
-                // getLocation(); 
+                
+                // Asosiy ilovani va sozlamalar tugmasini ko'rsatish
+                document.getElementById('app-wrapper').classList.add('visible');
+                const settingsToggle = document.querySelector('.settings-toggle');
+                settingsToggle.style.opacity = '1';
+                settingsToggle.style.visibility = 'visible';
             }, 500);
         }
         
@@ -689,6 +747,7 @@ const translations = {
         g_storm_watch: "Magnit bo'roni kutilmoqda",
         loc_access: "📍 Joylashuvni aniqlash...",
         loc_denied: "❌ Joylashuvga ruxsat berilmadi",
+        welcome: `Xush kelibsiz, ${userName || 'mehmon'}!`,
         blocked_msg: "🚫 Siz bloklangansiz!\nIltimos, admin bilan bog'laning yoki kuting.",
         date_locale: "uz-UZ"
     },
@@ -713,6 +772,7 @@ const translations = {
         g_storm_watch: "Ожидается магнитная буря",
         loc_access: "📍 Определение местоположения...",
         loc_denied: "❌ Доступ к геопозиции запрещен",
+        welcome: `Добро пожаловать, ${userName || 'гость'}!`,
         blocked_msg: "🚫 Вы заблокированы!\nПожалуйста, свяжитесь с админом или подождите.",
         date_locale: "ru-RU"
     },
@@ -737,6 +797,7 @@ const translations = {
         g_storm_watch: "Geomagnetic storm watch",
         loc_access: "📍 Locating...",
         loc_denied: "❌ Location denied",
+        welcome: `Welcome, ${userName || 'guest'}!`,
         blocked_msg: "🚫 You are blocked!\nPlease contact admin or wait.",
         date_locale: "en-US"
     }
