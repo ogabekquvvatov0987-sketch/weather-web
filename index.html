@@ -15,7 +15,6 @@
 
 :root {
     /* Default fon (Quyoshli osmon) */
-    /* --bg-image is deprecated, using video now */
     --text-color: #ffffff;
     --glass-bg: rgba(255, 255, 255, 0.1); /* Yumshoqroq shaffoflik */
     --glass-border: rgba(255, 255, 255, 0.2);
@@ -50,6 +49,7 @@ body {
     justify-content: center;
     align-items: center;
     color: var(--text-color);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); /* Yozuvlar ko'rinishi uchun soya */
     transition: background 1s ease-in-out;
 }
 
@@ -63,7 +63,7 @@ body {
     width: auto;
     height: auto; /* object-fit: cover; bilan birga yaxshi ishlaydi */
     z-index: -100;
-    filter: blur(3px) saturate(120%) brightness(0.95); /* Bahor uchun tiniqroq va tabiiy ranglar */
+    filter: blur(10px) saturate(110%) brightness(0.7); /* Kuchliroq xiralashtirish va qoraytirish */
     transform: scale(1.1); /* Kadr chetlarini to'ldirish uchun */
     object-fit: cover;
     transition: opacity 3s ease-in-out; /* Almashish yanada sekinlashtirildi */
@@ -478,10 +478,11 @@ button:active {
 }
 /* Chaqmoq chaqishi */
 @keyframes flashBolt {
-    50% { opacity: 0; transform: translateX(-50%) scale(0.8); }
-    52% { opacity: 1; transform: translateX(-50%) scale(1.2); }
-    54% { opacity: 0; }
-    56% { opacity: 1; transform: translateX(-50%) scale(1.2); }
+    0%, 45% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+    50% { opacity: 1; transform: translateX(-50%) scale(1.2); }
+    60% { opacity: 0; }
+    65% { opacity: 1; transform: translateX(-50%) scale(1.2); }
+    75% { opacity: 0; }
     100% { opacity: 0; }
 }
 
@@ -725,8 +726,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // YUKLANGANDA MAVZUGA MOS VIDEO O'RNATISH
     if (isDarkMode) {
-        // Tungi rejim: Aylanayotgan Yer shari (Space/Earth)
-        videoEl.src = "https://videos.pexels.com/video-files/3629578/3629578-hd_1920_1080_25fps.mp4"; // Bahoriy tun (yulduzlar)
+        // Tungi rejim: Tungi shahar manzarasi
+        videoEl.src = "https://videos.pexels.com/video-files/3121459/3121459-hd_1920_1080_25fps.mp4"; 
     } else {
         // Kunduzgi rejim: Ochiq osmon
         videoEl.src = "https://videos.pexels.com/video-files/4207205/4207205-hd_1920_1080_30fps.mp4"; // Bahor (yashil maydon)
@@ -896,9 +897,9 @@ function setTheme(theme) {
         // Default fonni yangilash
         const videoEl = document.getElementById('bg-video');
         if (isDarkMode) {
-            videoEl.src = "https://videos.pexels.com/video-files/1851190/1851190-hd_1920_1080_25fps.mp4"; // Yer shari
+            videoEl.src = "https://videos.pexels.com/video-files/3121459/3121459-hd_1920_1080_25fps.mp4"; // Tungi shahar
         } else {
-            videoEl.src = "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4"; // Ochiq osmon
+            videoEl.src = "https://videos.pexels.com/video-files/4207205/4207205-hd_1920_1080_30fps.mp4"; // Bahor
         }
         videoEl.play().catch(e=>{});
     }
@@ -974,7 +975,7 @@ function updateBackgroundVideo(conditionText, apiIsDay) {
         cloudsDay: "https://videos.pexels.com/video-files/3678380/3678380-hd_1920_1080_25fps.mp4", // Moviy osmon va bulutlar
         cloudsNight: "https://videos.pexels.com/video-files/3562852/3562852-hd_1920_1080_25fps.mp4", // Oy va bulutlar
         clearDay: "https://videos.pexels.com/video-files/4207205/4207205-hd_1920_1080_30fps.mp4", // Yashil maydon va quyosh
-        clearNight: "https://videos.pexels.com/video-files/3629578/3629578-hd_1920_1080_25fps.mp4" // Yulduzli osmon
+        clearNight: "https://videos.pexels.com/video-files/3121459/3121459-hd_1920_1080_25fps.mp4" // Tungi shahar
     };
 
     if (text.includes("thunder") || text.includes("chaqmoq")) {
