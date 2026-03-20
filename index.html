@@ -62,7 +62,7 @@ body {
     width: auto;
     height: auto; /* object-fit: cover; bilan birga yaxshi ishlaydi */
     z-index: -100;
-    filter: blur(8px) saturate(180%) brightness(0.9); /* To'yinganlik oshirildi, yorqinlik pasaytirildi */
+    filter: blur(3px) saturate(120%) brightness(0.95); /* Bahor uchun tiniqroq va tabiiy ranglar */
     transform: scale(1.1); /* Kadr chetlarini to'ldirish uchun */
     object-fit: cover;
     transition: opacity 3s ease-in-out; /* Almashish yanada sekinlashtirildi */
@@ -97,8 +97,8 @@ body {
 /* Glassmorphism Card */
 .card {
     background: var(--glass-bg);
-    backdrop-filter: blur(25px) saturate(200%); /* Kuchliroq blur va to'yinganlik */
-    -webkit-backdrop-filter: blur(25px) saturate(200%);
+    backdrop-filter: blur(15px) saturate(150%); /* Eski qurilmalar uchun yengillashtirildi */
+    -webkit-backdrop-filter: blur(15px) saturate(150%);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
     padding: 30px;
@@ -110,6 +110,16 @@ body {
     will-change: transform, box-shadow;
     animation: card-fade-in 1s ease-out 0.5s;
     animation-fill-mode: backwards; /* Animatsiya boshlanishidan oldin yashirin turadi */
+}
+
+/* Eski qurilmalar uchun fallback (backdrop-filter ishlamasa) */
+@supports not (backdrop-filter: blur(15px)) {
+    .card, .settings-panel, .clock-widget {
+        background: rgba(255, 255, 255, 0.9) !important;
+    }
+    body.dark-mode .card, body.dark-mode .settings-panel, body.dark-mode .clock-widget {
+        background: rgba(30, 30, 30, 0.9) !important;
+    }
 }
 
 @keyframes card-fade-in {
@@ -389,7 +399,7 @@ button:active {
     content: "";
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: url('https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg') no-repeat center center;
+    background: url('https://images.pexels.com/photos/1188083/pexels-photo-1188083.png') no-repeat center center; /* Bahor gullari */
     background-size: cover;
     filter: blur(15px) brightness(0.6); /* Tabiat fonini hiralashtirish */
     transform: scale(1.1);
@@ -449,6 +459,30 @@ button:active {
 .cloud::after { width: 50px; height: 50px; top: -20px; right: 15px; }
 
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+/* Chaqmoq (Lightning) Animatsiyasi */
+.lightning {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 10px 30px 10px;
+    border-color: transparent transparent #FFD700 transparent;
+    z-index: 1;
+    animation: flashBolt 2s infinite;
+    opacity: 0;
+}
+/* Chaqmoq chaqishi */
+@keyframes flashBolt {
+    90% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+    92% { opacity: 1; transform: translateX(-50%) scale(1.2); }
+    94% { opacity: 0; }
+    96% { opacity: 1; transform: translateX(-50%) scale(1.2); }
+    100% { opacity: 0; }
+}
 
 .rain { position: absolute; top: 60px; width: 100%; height: 100%; z-index: 1; }
 .drop {
@@ -562,6 +596,7 @@ button:active {
             <div class="cloud">
                 <span class="progress-text" id="progressText">0%</span>
             </div>
+            <div class="lightning"></div> <!-- Chaqmoq qo'shildi -->
             <div class="rain">
                 <span class="drop"></span><span class="drop"></span><span class="drop"></span><span class="drop"></span>
             </div>
@@ -661,6 +696,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const isDarkMode = (savedThemeState === 'true');
     document.body.classList.toggle('dark-mode', isDarkMode);
     
+    // Agar foydalanuvchi hech qachon rejim tanlamagan bo'lsa, standart (kunduzgi) bo'lib qoladi
+    // localStorage 'isDarkMode' yo'q bo'lsa, savedThemeState null bo'ladi, isDarkMode false bo'ladi.
+    // Bu "boshqa payt standart turaversin" talabiga mos.
+    
     // UI holatini yangilash (Slayderlar)
     updateToggleUI('theme', isDarkMode ? 'dark' : 'light');
 
@@ -672,10 +711,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // YUKLANGANDA MAVZUGA MOS VIDEO O'RNATISH
     if (isDarkMode) {
         // Tungi rejim: Aylanayotgan Yer shari (Space/Earth)
-        videoEl.src = "https://videos.pexels.com/video-files/1851190/1851190-hd_1920_1080_25fps.mp4";
+        videoEl.src = "https://videos.pexels.com/video-files/3629578/3629578-hd_1920_1080_25fps.mp4"; // Bahoriy tun (yulduzlar)
     } else {
         // Kunduzgi rejim: Ochiq osmon
-        videoEl.src = "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4";
+        videoEl.src = "https://videos.pexels.com/video-files/4207205/4207205-hd_1920_1080_30fps.mp4"; // Bahor (yashil maydon)
     }
     videoEl.load();
     videoEl.play().catch(e => {}); // Ba'zi brauzerlarda avtomatik ijro etish bloklanishi mumkin
@@ -906,17 +945,18 @@ function updateBackgroundVideo(conditionText, apiIsDay) {
     const effectiveIsDay = apiIsDay && !isDarkModeActive; // If API says day, but dark mode is active, treat as night for video selection
 
     // Aniq ob-havo uchun video havolalari (HD 1080p)
+    // Bahor fasliga moslab yangilandi
     const videos = {
-        thunder: "https://videos.pexels.com/video-files/6992288/6992288-hd_1920_1080_25fps.mp4",
-        rainDay: "https://videos.pexels.com/video-files/1732934/1732934-hd_1920_1080_30fps.mp4",
-        rainNight: "https://videos.pexels.com/video-files/8033595/8033595-hd_1920_1080_25fps.mp4",
-        snow: "https://videos.pexels.com/video-files/3253429/3253429-hd_1920_1080_25fps.mp4", // Kun/tun uchun mos
+        thunder: "https://videos.pexels.com/video-files/2932333/2932333-hd_1920_1080_30fps.mp4", // Chaqmoq va bulutlar
+        rainDay: "https://videos.pexels.com/video-files/4624227/4624227-hd_1920_1080_24fps.mp4", // Yomg'ir va ko'katlar
+        rainNight: "https://videos.pexels.com/video-files/4527784/4527784-hd_1920_1080_25fps.mp4", // Tun, oyna, yomg'ir
+        snow: "https://videos.pexels.com/video-files/856997/856997-hd_1920_1080_30fps.mp4", // Qor (bahorda kam bo'lsa ham)
         fogDay: "https://videos.pexels.com/video-files/2833497/2833497-hd_1920_1080_25fps.mp4",
         fogNight: "https://videos.pexels.com/video-files/5432943/5432943-hd_1920_1080_25fps.mp4",
-        cloudsDay: "https://videos.pexels.com/video-files/855344/855344-hd_1920_1080_24fps.mp4",
-        cloudsNight: "https://videos.pexels.com/video-files/5794557/5794557-hd_1920_1080_25fps.mp4",
-        clearDay: "https://videos.pexels.com/video-files/853871/853871-hd_1920_1080_25fps.mp4",
-        clearNight: "https://videos.pexels.com/video-files/1851190/1851190-hd_1920_1080_25fps.mp4" // Aylanayotgan Yer shari (Space)
+        cloudsDay: "https://videos.pexels.com/video-files/3678380/3678380-hd_1920_1080_25fps.mp4", // Moviy osmon va bulutlar
+        cloudsNight: "https://videos.pexels.com/video-files/3562852/3562852-hd_1920_1080_25fps.mp4", // Oy va bulutlar
+        clearDay: "https://videos.pexels.com/video-files/4207205/4207205-hd_1920_1080_30fps.mp4", // Yashil maydon va quyosh
+        clearNight: "https://videos.pexels.com/video-files/3629578/3629578-hd_1920_1080_25fps.mp4" // Yulduzli osmon
     };
 
     if (text.includes("thunder") || text.includes("chaqmoq")) {
