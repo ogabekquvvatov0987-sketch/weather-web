@@ -16,11 +16,11 @@
 :root {
     /* Default fon (Quyoshli osmon) */
     --text-color: #ffffff;
-    --glass-bg: rgba(255, 255, 255, 0.1); /* Yumshoqroq shaffoflik */
+    --glass-bg: rgba(0, 0, 0, 0.25); /* Yozuvlar ko'rinishi uchun qoraytirilgan fon */
     --glass-border: rgba(255, 255, 255, 0.2);
     --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25); /* Yumshoqroq soya */
-    --input-bg: rgba(255, 255, 255, 0.1);
-    --btn-bg: rgba(255, 255, 255, 0.2); /* Slightly more opaque */
+    --input-bg: rgba(0, 0, 0, 0.3);
+    --btn-bg: rgba(255, 255, 255, 0.15); /* Slightly more opaque */
     --btn-hover: rgba(255, 255, 255, 0.3);
 }
 
@@ -30,7 +30,7 @@ body.dark-mode {
     --glass-bg: rgba(0, 0, 0, 0.3); /* Qorong'u va kontrastli */
     --glass-border: rgba(255, 255, 255, 0.18);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); /* Qorong'u soya */
-    --input-bg: rgba(0, 0, 0, 0.35);
+    --input-bg: rgba(0, 0, 0, 0.4);
     --btn-bg: rgba(255, 255, 255, 0.12); /* Tugma ajralib turishi uchun (oldin: 0.1) */
     --btn-hover: rgba(255, 255, 255, 0.22); /* Lighter hover (oldin: 0.2) */
 }
@@ -43,8 +43,6 @@ html, body {
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: url('https://images.pexels.com/photos/1188083/pexels-photo-1188083.png') no-repeat center center fixed; /* Video o'rniga zaxira fon */
-    background-size: cover;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -63,11 +61,25 @@ body {
     width: auto;
     height: auto; /* object-fit: cover; bilan birga yaxshi ishlaydi */
     z-index: -100;
-    filter: blur(10px) saturate(110%) brightness(0.7); /* Kuchliroq xiralashtirish va qoraytirish */
+    filter: blur(15px) saturate(110%) brightness(0.6); /* Kuchliroq xiralashtirish va qoraytirish */
     transform: scale(1.1); /* Kadr chetlarini to'ldirish uchun */
     object-fit: cover;
     transition: opacity 3s ease-in-out; /* Almashish yanada sekinlashtirildi */
     will-change: opacity; /* Optimizatsiya */
+}
+
+/* Zaxira fon rasmi (Video ishlamasa) */
+#bg-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('https://images.pexels.com/photos/1188083/pexels-photo-1188083.png') no-repeat center center fixed;
+    background-size: cover;
+    z-index: -101; /* Video ostida */
+    filter: blur(15px) brightness(0.6); /* Video bilan bir xil effekt */
+    transform: scale(1.1);
 }
 
 /* Asosiy konteyner (Device wrapper) */
@@ -591,6 +603,9 @@ button:active {
 </head>
 <body>
 
+<!-- Zaxira fon rasmi -->
+<div id="bg-image"></div>
+
 <!-- Animated Video Background -->
 <!-- Optimizatsiya: preload="auto" qo'shildi -->
 <video autoplay loop playsinline muted preload="auto" id="bg-video" poster="https://images.pexels.com/photos/1188083/pexels-photo-1188083.png">
@@ -720,7 +735,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Video xatoliklarini ushlash (Qora ekran bo'lmasligi uchun)
     videoEl.addEventListener('error', function() {
-        console.log("Video yuklanmadi, zaxira rasm ishlatilmoqda.");
+        console.log("Video yuklanmadi, zaxira rasm (#bg-image) ko'rinadi.");
         videoEl.style.display = 'none'; // Videoni yashiramiz, orqa fon rasmi ko'rinadi
     });
 
